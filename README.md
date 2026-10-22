@@ -46,6 +46,6 @@ go run -mod=readonly docs/design/validate_contracts.go
 [ветке archive/go-mcp-v0.1](https://github.com/daybrk/istio-diagnostics-mcp/tree/archive/go-mcp-v0.1),
 commit `832578f9f23a44355841fe974a5e89167c6fce6e`.
 
-Новая работа ведётся в `refactor/live-readonly-foundation`. Обратная совместимость
+Работа продолжается в исходной ветке `feat/go-mcp-v0.1`. Обратная совместимость
 со старыми публичными tools не требуется. Отдельные правила и тестовые сценарии
 можно переносить из архива после проверки соответствия новой спецификации.
