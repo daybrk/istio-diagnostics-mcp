@@ -1,0 +1,2565 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "istio-diagnostics-mcp application contracts",
+  "description": "Draft target contract, not implemented. Validate individual definitions referenced by mcp-tools.json.",
+  "x-contract-version": "2026-10-22",
+  "$defs": {
+    "ID": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "Instant": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "Protocol": {
+      "type": "string",
+      "enum": [
+        "http",
+        "https",
+        "grpc",
+        "tcp",
+        "unknown"
+      ]
+    },
+    "TimeWindow": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "lookback_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "lookback_seconds"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "start": {
+              "$ref": "#/$defs/Instant"
+            },
+            "end": {
+              "$ref": "#/$defs/Instant"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ResolvedWindow": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/Instant"
+        },
+        "end": {
+          "$ref": "#/$defs/Instant"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "WorkloadQuery": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "Deployment",
+            "StatefulSet",
+            "DaemonSet",
+            "Pod",
+            "Selector"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "selector": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "Selector"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "selector"
+            ],
+            "not": {
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "name"
+            ],
+            "not": {
+              "required": [
+                "selector"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "WorkloadRef": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "Deployment",
+            "StatefulSet",
+            "DaemonSet",
+            "Pod"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "uid": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "context",
+        "namespace",
+        "kind",
+        "name",
+        "uid"
+      ],
+      "additionalProperties": false
+    },
+    "PeerQuery": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "workload",
+            "service",
+            "host",
+            "ip"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "protocol": {
+          "$ref": "#/$defs/Protocol"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "Warning": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "NextAction": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "clarify",
+            "select",
+            "poll",
+            "continue",
+            "refresh",
+            "read_evidence",
+            "read_playbook",
+            "query_product",
+            "close"
+          ]
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "module_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "instructions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "action",
+        "instructions"
+      ],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "additionalProperties": false
+    },
+    "Candidate": {
+      "type": "object",
+      "properties": {
+        "workload": {
+          "$ref": "#/$defs/WorkloadRef"
+        },
+        "pod_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "workload",
+        "pod_count"
+      ],
+      "additionalProperties": false
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "field",
+        "message",
+        "options"
+      ],
+      "additionalProperties": false
+    },
+    "Job": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "diagnostic",
+            "knowledge"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "partial",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "completed_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "started_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "finished_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "stop_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "operation_id",
+        "kind",
+        "status",
+        "completed_units",
+        "total_units"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageEntry": {
+      "type": "object",
+      "properties": {
+        "pod_uid": {
+          "$ref": "#/$defs/ID"
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "pod": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "logs_current",
+            "logs_previous",
+            "pod_status",
+            "events",
+            "resources",
+            "config_dump",
+            "certs",
+            "clusters",
+            "server_info"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "collected",
+            "partial",
+            "forbidden",
+            "unavailable",
+            "unsupported",
+            "cancelled",
+            "pending",
+            "truncated"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "pod_uid",
+        "namespace",
+        "pod",
+        "source",
+        "status",
+        "detail"
+      ],
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "discovered_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attempted_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "collected_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "partial_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailable_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pending_pods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CoverageEntry"
+          },
+          "maxItems": 10000
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "discovered_pods",
+        "attempted_pods",
+        "collected_pods",
+        "partial_pods",
+        "unavailable_pods",
+        "pending_pods",
+        "entries",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "Finding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/ID"
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "check_status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN",
+            "UNSUPPORTED"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "probable",
+            "unknown"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ID"
+          },
+          "maxItems": 100
+        },
+        "affected_pod_uids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ID"
+          },
+          "maxItems": 10000
+        },
+        "missing_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        },
+        "recommendation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "validation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "id",
+        "rule_id",
+        "check_status",
+        "confidence",
+        "summary",
+        "evidence_ids",
+        "affected_pod_uids",
+        "missing_evidence",
+        "recommendation",
+        "validation"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "confidence": {
+                "const": "confirmed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/ID"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "protocol": {
+          "$ref": "#/$defs/Protocol"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "investigated"
+          ]
+        },
+        "observation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count_semantics": {
+          "type": "string",
+          "enum": [
+            "log_records",
+            "deduplicated_requests"
+          ]
+        },
+        "last_seen": {
+          "$ref": "#/$defs/Instant"
+        },
+        "pod_uids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ID"
+          },
+          "maxItems": 10000
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "destination",
+        "protocol",
+        "status",
+        "observation_count",
+        "count_semantics",
+        "pod_uids"
+      ],
+      "additionalProperties": false
+    },
+    "Knowledge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/ID"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "catalog",
+            "ask",
+            "search",
+            "source"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "partial",
+            "unavailable",
+            "disabled"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ID"
+          },
+          "maxItems": 100
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "status",
+        "summary",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "ResumeSummary": {
+      "type": "object",
+      "properties": {
+        "scope_summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "selected_connection_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "checked_rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "maxItems": 100
+        },
+        "known_facts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        },
+        "next_step": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "remaining_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "scope_summary",
+        "checked_rule_ids",
+        "known_facts",
+        "gaps",
+        "next_step",
+        "remaining_count"
+      ],
+      "additionalProperties": false
+    },
+    "Comparison": {
+      "type": "object",
+      "properties": {
+        "baseline_attempt_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "current_attempt_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "configuration_changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        },
+        "symptom_changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        },
+        "conclusion": {
+          "type": "string",
+          "enum": [
+            "observed_improvement",
+            "unchanged",
+            "regressed",
+            "inconclusive"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "baseline_attempt_id",
+        "current_attempt_id",
+        "configuration_changes",
+        "symptom_changes",
+        "conclusion",
+        "limitations"
+      ],
+      "additionalProperties": false
+    },
+    "Diagnosis": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "needs_clarification",
+            "collecting",
+            "awaiting_selection",
+            "investigating",
+            "awaiting_next",
+            "closed"
+          ]
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "window": {
+          "$ref": "#/$defs/ResolvedWindow"
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadRef"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "inbound",
+            "outbound"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "prompt_bundle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ruleset_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Job"
+          },
+          "maxItems": 100
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Connection"
+          },
+          "maxItems": 100
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "maxItems": 100
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Knowledge"
+          },
+          "maxItems": 100
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "question": {
+          "$ref": "#/$defs/Question"
+        },
+        "comparison": {
+          "$ref": "#/$defs/Comparison"
+        },
+        "resume_summary": {
+          "$ref": "#/$defs/ResumeSummary"
+        },
+        "next_cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "connections": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "findings": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "knowledge": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jobs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "coverage_entries": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "connections",
+            "findings",
+            "knowledge",
+            "jobs",
+            "coverage_entries"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "state",
+        "created_at",
+        "updated_at",
+        "expires_at",
+        "prompt_bundle",
+        "ruleset_version",
+        "jobs",
+        "connections",
+        "findings",
+        "knowledge",
+        "coverage",
+        "resume_summary",
+        "totals"
+      ],
+      "additionalProperties": false
+    },
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/ID"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "kubernetes",
+            "envoy",
+            "proxy_access",
+            "proxy_diagnostic",
+            "kubernetes_event",
+            "product_knowledge"
+          ]
+        },
+        "collected_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "observed_at": {
+          "$ref": "#/$defs/Instant"
+        },
+        "source_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "pod_uid": {
+          "$ref": "#/$defs/ID"
+        },
+        "resource_uid": {
+          "$ref": "#/$defs/ID"
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 8192
+          },
+          "maxItems": 200
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "next_offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "product_source": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "const": "astra"
+            },
+            "project_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "citation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "revision_status": {
+              "type": "string",
+              "enum": [
+                "known",
+                "unknown"
+              ]
+            },
+            "revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "provider",
+            "revision_status"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "attempt_id",
+        "source_type",
+        "collected_at",
+        "source_locator",
+        "lines",
+        "offset",
+        "truncated"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "const": "product_knowledge"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "product_source"
+            ]
+          }
+        }
+      ]
+    },
+    "Scope": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "context",
+        "namespaces"
+      ],
+      "additionalProperties": false
+    },
+    "Capabilities": {
+      "type": "object",
+      "properties": {
+        "server_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "prompt_bundle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ruleset_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "stdio",
+              "streamable_http"
+            ]
+          },
+          "maxItems": 2
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "maxItems": 100
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "maxItems": 100
+        },
+        "supported_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "maxItems": 100
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "session_ttl_seconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_sessions": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "operation_budget_seconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "response_bytes": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "session_ttl_seconds",
+            "max_sessions",
+            "operation_budget_seconds",
+            "response_bytes"
+          ],
+          "additionalProperties": false
+        },
+        "astra": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "disabled",
+                "configured",
+                "available",
+                "unavailable"
+              ]
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "catalog",
+                  "ask",
+                  "search",
+                  "source"
+                ]
+              },
+              "maxItems": 4
+            }
+          },
+          "required": [
+            "enabled",
+            "status",
+            "actions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "server_version",
+        "contract_version",
+        "prompt_bundle",
+        "ruleset_version",
+        "transports",
+        "scope",
+        "formats",
+        "supported_checks",
+        "limits",
+        "astra"
+      ],
+      "additionalProperties": false
+    },
+    "Resolution": {
+      "type": "object",
+      "properties": {
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "maxItems": 100
+        },
+        "question": {
+          "$ref": "#/$defs/Question"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "candidates",
+        "truncated"
+      ],
+      "additionalProperties": false
+    },
+    "Playbook": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bundle_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "maxItems": 100
+        },
+        "related_modules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "module_id",
+        "bundle_version",
+        "content",
+        "required_capabilities",
+        "related_modules"
+      ],
+      "additionalProperties": false
+    },
+    "Closure": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "state": {
+          "const": "closed"
+        },
+        "closed_at": {
+          "$ref": "#/$defs/Instant"
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "state",
+        "closed_at"
+      ],
+      "additionalProperties": false
+    },
+    "get_capabilitiesInput": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "get_capabilitiesOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Capabilities"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "resolve_workloadInput": {
+      "$ref": "#/$defs/WorkloadQuery"
+    },
+    "resolve_workloadOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Resolution"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "start_diagnosisInput": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadQuery"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "inbound",
+            "outbound"
+          ]
+        },
+        "peer": {
+          "$ref": "#/$defs/PeerQuery"
+        },
+        "time_window": {
+          "$ref": "#/$defs/TimeWindow"
+        }
+      },
+      "required": [
+        "operation_id"
+      ],
+      "additionalProperties": false
+    },
+    "start_diagnosisOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "get_diagnosisInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        }
+      },
+      "required": [
+        "diagnosis_id"
+      ],
+      "additionalProperties": false
+    },
+    "get_diagnosisOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "investigate_connectionInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "connection_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "connection_id",
+        "operation_id"
+      ],
+      "additionalProperties": false
+    },
+    "investigate_connectionOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "get_evidenceInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "evidence_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 50
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "evidence_id"
+      ],
+      "additionalProperties": false
+    },
+    "get_evidenceOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "refresh_diagnosisInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "time_window": {
+          "$ref": "#/$defs/TimeWindow"
+        },
+        "compare_to_attempt_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "operation_id",
+        "time_window"
+      ],
+      "additionalProperties": false
+    },
+    "refresh_diagnosisOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "cancel_operationInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "diagnosis_id",
+        "operation_id"
+      ],
+      "additionalProperties": false
+    },
+    "cancel_operationOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "close_diagnosisInput": {
+      "type": "object",
+      "properties": {
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "diagnosis_id"
+      ],
+      "additionalProperties": false
+    },
+    "close_diagnosisOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Closure"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "get_playbookInput": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "type": "string",
+          "enum": [
+            "main",
+            "intake",
+            "investigation",
+            "evidence",
+            "report",
+            "recheck",
+            "astra"
+          ]
+        },
+        "diagnosis_id": {
+          "$ref": "#/$defs/ID"
+        }
+      },
+      "required": [
+        "module_id"
+      ],
+      "additionalProperties": false
+    },
+    "get_playbookOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Playbook"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "get_product_contextInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "diagnosis_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "operation_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "action": {
+              "const": "catalog"
+            },
+            "project_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,32}$"
+            }
+          },
+          "required": [
+            "diagnosis_id",
+            "operation_id",
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "diagnosis_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "operation_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "action": {
+              "const": "ask"
+            },
+            "project_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,32}$"
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "simple",
+                "advanced"
+              ],
+              "default": "simple"
+            }
+          },
+          "required": [
+            "diagnosis_id",
+            "operation_id",
+            "action",
+            "project_id",
+            "question"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "diagnosis_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "operation_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "action": {
+              "const": "search"
+            },
+            "project_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,32}$"
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "required": [
+            "diagnosis_id",
+            "operation_id",
+            "action",
+            "project_id",
+            "query"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "diagnosis_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "operation_id": {
+              "$ref": "#/$defs/ID"
+            },
+            "action": {
+              "const": "source"
+            },
+            "project_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,32}$"
+            },
+            "repo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 400,
+              "default": 400
+            }
+          },
+          "required": [
+            "diagnosis_id",
+            "operation_id",
+            "action",
+            "project_id",
+            "repo",
+            "path"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "get_product_contextOutput": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "2026-10-22"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "needs_clarification",
+            "partial",
+            "error"
+          ]
+        },
+        "data": {
+          "$ref": "#/$defs/Diagnosis"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          },
+          "maxItems": 100
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "maxItems": 20
+        },
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "contract_version",
+        "outcome",
+        "warnings",
+        "next_actions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ],
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

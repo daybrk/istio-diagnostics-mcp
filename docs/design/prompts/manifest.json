@@ -1,0 +1,119 @@
+{
+  "bundle_version": "2026-10-22",
+  "contract_version": "2026-10-22",
+  "modules": [
+    {
+      "id": "main",
+      "path": "main.md",
+      "version": "2026-10-22",
+      "trigger": "Начало работы",
+      "inputs": "Capabilities и жалоба",
+      "expected_result": "Выбор следующего этапа",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "intake",
+        "investigation",
+        "evidence",
+        "report",
+        "recheck",
+        "astra"
+      ],
+      "sha256": "0be78ca48c53de3da9d06cb4c6f7f7d430ffae9e7093cc005b6dc39122960541"
+    },
+    {
+      "id": "intake",
+      "path": "intake.md",
+      "version": "2026-10-22",
+      "trigger": "Неоднозначный ввод",
+      "inputs": "Жалоба, scope, candidates",
+      "expected_result": "Однозначный запрос или вопрос",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "investigation"
+      ],
+      "sha256": "75fb196ff2cb7eefa83b4d1ca639339802c5b48a07106704f931a263cabe4731"
+    },
+    {
+      "id": "investigation",
+      "path": "investigation.md",
+      "version": "2026-10-22",
+      "trigger": "Сбор и выбранная связь",
+      "inputs": "Diagnosis view",
+      "expected_result": "Findings и coverage",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "evidence",
+        "report"
+      ],
+      "sha256": "08c12e03c2fe97b39b84f273940380e94e13895774e2ab8330a49b649ab6c8b0"
+    },
+    {
+      "id": "evidence",
+      "path": "evidence.md",
+      "version": "2026-10-22",
+      "trigger": "Оценка причинности",
+      "inputs": "Findings и evidence",
+      "expected_result": "Вывод без повышения confidence",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "report"
+      ],
+      "sha256": "cae954a3832d20f41de3ce365f829bb555f66be6fc7aec565a817b873cfd0b82"
+    },
+    {
+      "id": "report",
+      "path": "report.md",
+      "version": "2026-10-22",
+      "trigger": "Ответ пользователю",
+      "inputs": "Findings, scope, remaining queue",
+      "expected_result": "Краткий проверяемый ответ",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "recheck"
+      ],
+      "sha256": "3e376eda4e9d29964c1d566f55e4f282299a2c13b9a8e566897b2cc3ed694e8f"
+    },
+    {
+      "id": "recheck",
+      "path": "recheck.md",
+      "version": "2026-10-22",
+      "trigger": "Проверка после изменения",
+      "inputs": "Предыдущая attempt и новое окно",
+      "expected_result": "Сравнение с оговоркой о трафике",
+      "required_capabilities": [
+        "tools"
+      ],
+      "related_modules": [
+        "report"
+      ],
+      "sha256": "6ca0546a0bb3143d5c3311e7222a6094cdc8d893bfffc42b79ea154778c25478"
+    },
+    {
+      "id": "astra",
+      "path": "integrations/astra.md",
+      "version": "2026-10-22",
+      "trigger": "ASTRA enabled и нужен контекст",
+      "inputs": "Session, question, project scope",
+      "expected_result": "Knowledge evidence",
+      "required_capabilities": [
+        "tools",
+        "astra.enabled"
+      ],
+      "related_modules": [
+        "evidence",
+        "report"
+      ],
+      "sha256": "aff798d031e4caa5ecdf5dc06d8dead8df8dd30d9fa1bdb94c03747bed475420"
+    }
+  ]
+}

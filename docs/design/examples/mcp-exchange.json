@@ -1,0 +1,69 @@
+{
+  "description": "Synthetic tools/call exchange after successful MCP initialize; not a complete transport transcript.",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_capabilities",
+      "arguments": {}
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "isError": false,
+      "structuredContent": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "server_version": "design-only",
+          "contract_version": "2026-10-22",
+          "prompt_bundle": "2026-10-22",
+          "ruleset_version": "2026-10-22",
+          "transports": [
+            "stdio",
+            "streamable_http"
+          ],
+          "scope": [
+            {
+              "context": "test-cluster",
+              "namespaces": [
+                "shop",
+                "backend"
+              ]
+            }
+          ],
+          "formats": [
+            "istio_access_text",
+            "known_json"
+          ],
+          "supported_checks": [
+            "SERVICE_ENDPOINTS",
+            "TLS_VALIDITY"
+          ],
+          "limits": {
+            "session_ttl_seconds": 1800,
+            "max_sessions": 16,
+            "operation_budget_seconds": 120,
+            "response_bytes": 524288
+          },
+          "astra": {
+            "enabled": false,
+            "status": "disabled",
+            "actions": []
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"contract_version\": \"2026-10-22\", \"outcome\": \"ok\", \"data\": {\"server_version\": \"design-only\", \"contract_version\": \"2026-10-22\", \"prompt_bundle\": \"2026-10-22\", \"ruleset_version\": \"2026-10-22\", \"transports\": [\"stdio\", \"streamable_http\"], \"scope\": [{\"context\": \"test-cluster\", \"namespaces\": [\"shop\", \"backend\"]}], \"formats\": [\"istio_access_text\", \"known_json\"], \"supported_checks\": [\"SERVICE_ENDPOINTS\", \"TLS_VALIDITY\"], \"limits\": {\"session_ttl_seconds\": 1800, \"max_sessions\": 16, \"operation_budget_seconds\": 120, \"response_bytes\": 524288}, \"astra\": {\"enabled\": false, \"status\": \"disabled\", \"actions\": []}}, \"warnings\": [], \"next_actions\": []}"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "contract_version": "2026-10-22",
+  "status": "design",
+  "schema_dialect": "https://json-schema.org/draft/2020-12/schema",
+  "tools": [
+    {
+      "name": "get_capabilities",
+      "description": "Область доступа, версии правил/промптов, лимиты и состояние optional ASTRA.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_capabilitiesInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_capabilitiesOutput"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "resolve_workload",
+      "description": "Разрешить приложение по имени/selector; при неоднозначности вернуть выбор, не начинать сбор.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/resolve_workloadInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/resolve_workloadOutput"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "start_diagnosis",
+      "description": "Начать live read-only расследование входящих/исходящих cluster-local соединений Kubernetes/Istio; уточнить недостающий ввод.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/start_diagnosisInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/start_diagnosisOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_diagnosis",
+      "description": "Прочитать прогресс, resume summary, evidence references и оставшуюся очередь без повторного сбора.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_diagnosisInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_diagnosisOutput"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "investigate_connection",
+      "description": "Исследовать выбранную связь текущей попытки по всем доступным репликам обеих сторон.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/investigate_connectionInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/investigate_connectionOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "get_evidence",
+      "description": "Получить очищенный фрагмент evidence выбранной сессии с исходным locator.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_evidenceInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_evidenceOutput"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "refresh_diagnosis",
+      "description": "Создать новую live-попытку с явным окном; при необходимости сравнить с прежней без генерации трафика.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/refresh_diagnosisInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/refresh_diagnosisOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "cancel_operation",
+      "description": "Отменить конкретную операцию сессии, закрыть её tunnels и сохранить partial result.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/cancel_operationInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/cancel_operationOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "close_diagnosis",
+      "description": "Закрыть сессию и освободить её evidence/jobs/tunnels; повтор до TTL идемпотентен.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/close_diagnosisInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/close_diagnosisOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_playbook",
+      "description": "Прочитать модуль инструкций; с diagnosis_id используется закреплённая версия bundle.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_playbookInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_playbookOutput"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_product_context",
+      "description": "Optional ASTRA: каталог, вопрос, поиск или чтение источника. Disabled/недоступность не блокируют основную диагностику.",
+      "inputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_product_contextInput"
+      },
+      "outputSchema": {
+        "$ref": "mcp.schema.json#/$defs/get_product_contextOutput"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "idempotentHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      }
+    }
+  ]
+}

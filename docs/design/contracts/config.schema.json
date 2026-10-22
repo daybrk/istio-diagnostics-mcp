@@ -1,0 +1,313 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "2026-10-22"
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "stdio",
+        "streamable_http"
+      ]
+    },
+    "http": {
+      "type": "object",
+      "properties": {
+        "listen": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "public_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "allowed_origins": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "maxItems": 100
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "const": "oidc"
+            },
+            "issuer": {
+              "type": "string",
+              "format": "uri"
+            },
+            "audience": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "bindings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "contexts": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/ConfigScope"
+                    },
+                    "maxItems": 100
+                  },
+                  "astra_projects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{1,32}$"
+                    },
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "subject",
+                  "contexts",
+                  "astra_projects"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 1000
+            }
+          },
+          "required": [
+            "mode",
+            "issuer",
+            "audience",
+            "bindings"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "listen",
+        "public_url",
+        "allowed_origins",
+        "auth"
+      ],
+      "additionalProperties": false
+    },
+    "kube": {
+      "type": "object",
+      "properties": {
+        "kubeconfig_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "contexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ConfigScope"
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "kubeconfig_path",
+        "contexts"
+      ],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "max_sessions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "session_idle_ttl_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "memory_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pod_concurrency": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "port_forward_concurrency": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "request_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operation_budget_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_log_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_envoy_response_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_tool_response_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "max_sessions",
+        "session_idle_ttl_seconds",
+        "memory_bytes",
+        "pod_concurrency",
+        "port_forward_concurrency",
+        "request_timeout_seconds",
+        "operation_budget_seconds",
+        "max_log_bytes",
+        "max_envoy_response_bytes",
+        "max_tool_response_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "astra": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "default_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "agent_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "credential_env": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "allowed_projects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,32}$"
+          },
+          "maxItems": 100
+        },
+        "request_budget_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "transport",
+    "kube",
+    "limits",
+    "astra"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "ConfigScope": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "context",
+        "namespaces"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "transport": {
+            "const": "streamable_http"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "http"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "astra": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "astra": {
+            "required": [
+              "credential_env",
+              "allowed_projects",
+              "request_budget_seconds",
+              "max_response_bytes"
+            ],
+            "anyOf": [
+              {
+                "required": [
+                  "default_url"
+                ]
+              },
+              {
+                "required": [
+                  "agent_url"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
