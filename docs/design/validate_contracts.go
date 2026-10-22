@@ -199,7 +199,7 @@ func main() {
 		return nil
 	}))
 	fmt.Printf("Validated %d tools, %d cases, config + 2 negative configs, %d prompt hashes, %d local links, %d JSON files.\n", len(catalog.Tools), len(cases.Cases), len(manifest.Modules), links, jsonFiles)
-	fmt.Println("This validates design artifacts only; live/server behavior has not been tested.")
+	fmt.Println("This command validates design artifacts only; use go test for runtime fixtures and a real cluster for live verification.")
 }
 
 func checkTimeWindows(value any) {

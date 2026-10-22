@@ -1,11 +1,11 @@
-name: Design contracts
+name: Go and contracts
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  contracts:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,6 +17,9 @@ jobs:
           go-version: ${{ matrix.go }}
           cache: true
       - name: Formatting
-        run: test -z "$(gofmt -l docs/design/validate_contracts.go)"
+        run: test -z "$(gofmt -l cmd internal docs/design/*.go)"
+      - run: go vet ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go build -trimpath -o bin/istio-diagnostics-mcp ./cmd/istio-diagnostics-mcp
       - name: Validate design contracts and playbooks
         run: go run -mod=readonly docs/design/validate_contracts.go

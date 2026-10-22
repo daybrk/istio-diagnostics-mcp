@@ -1,6 +1,6 @@
 {
   "contract_version": "2026-10-22",
-  "status": "design",
+  "status": "implemented",
   "schema_dialect": "https://json-schema.org/draft/2020-12/schema",
   "tools": [
     {

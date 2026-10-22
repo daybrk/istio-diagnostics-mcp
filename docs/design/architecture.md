@@ -95,4 +95,4 @@ snapshot API. Отдельные правила и сценарии из арх�
 можно перенести после проверки семантики и адаптации к новым evidence-моделям.
 Границы — session store, log adapters, coordinator, playbooks, ASTRA adapter.
 [Описание очистки](rewrite-baseline.md) фиксирует архив и сохранённые артефакты;
-порядок реализации компонентов относится к отдельному плану.
+порядок реализации компонентов описан в [плане](../superpowers/plans/2026-10-22-live-readonly-implementation.md).

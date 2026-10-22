@@ -87,8 +87,8 @@ parser; unsupported endpoint не останавливает остальные 
 
 ## Конфигурация
 
-Предлагается JSON-конфигурация с schemaVersion, transport, kube, limits и astra.
-Пример отражает будущий интерфейс, не существующие CLI-флаги прототипа.
+Сервер принимает JSON-конфигурацию с schema_version, transport, kube, limits и astra
+через `-config`. Пример используется текущим бинарником; `-check-config` проверяет его без сети.
 Неизвестные поля отклоняются; секреты — через environment reference, не текст
 файла или MCP args. При disabled ASTRA не проверять наличие её credentials и не
 делать network discovery. HTTP режим без валидной auth config не стартует.

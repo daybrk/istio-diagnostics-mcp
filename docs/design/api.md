@@ -6,7 +6,7 @@
 [Пример JSON-RPC обмена](examples/mcp-exchange.json) показывает structuredContent
 и совместимый text-блок одного и того же результата после initialize.
 
-**Проектный контракт, ещё не реализован.** Это MCP JSON-RPC API; отдельного REST
+**Контракт реализован в Go-сервере.** [Статус и ограничения](implementation-status.md). Это MCP JSON-RPC API; отдельного REST
 API `/diagnoses` не предлагается. OpenAPI не подменяет схемы MCP tools.
 Транспорт и lifecycle реализуются официальным Go SDK с согласованием версии MCP.
 Версия прикладного контракта независима от protocolVersion MCP.

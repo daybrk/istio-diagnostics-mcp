@@ -55,5 +55,6 @@ git fetch origin archive/go-mcp-v0.1
 git show origin/archive/go-mcp-v0.1:internal/diagnostics/diagnostics_test.go
 ```
 
-Это подготовка рабочего дерева, не новая реализация MCP. Её отдельный план
-должен опираться на подготовленные артефакты и оставшиеся открытые решения.
+Этот документ фиксирует подготовительный коммит очистки. Последующая реализация
+выполнена в той же исходной ветке; см. [статус](implementation-status.md) и
+[план](../superpowers/plans/2026-10-22-live-readonly-implementation.md).
