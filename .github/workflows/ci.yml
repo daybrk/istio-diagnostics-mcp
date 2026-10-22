@@ -1,0 +1,23 @@
+name: Go CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.25.x', '1.26.x']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      - name: Formatting
+        run: test -z "$(gofmt -l cmd internal)"
+      - run: go vet ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go build -trimpath -o bin/istio-diagnostics-mcp ./cmd/istio-diagnostics-mcp

@@ -1,0 +1,5 @@
+/bin/
+/.venv/
+/coverage.out
+/snapshots/
+*.test

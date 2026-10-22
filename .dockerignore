@@ -1,0 +1,5 @@
+.git
+.venv
+bin
+snapshots
+coverage.out
