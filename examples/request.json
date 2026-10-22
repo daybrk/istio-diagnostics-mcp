@@ -1,8 +1,0 @@
-{
-  "direction": "outbound",
-  "port": 8080,
-  "protocol": "HTTP",
-  "host": "api.example.com",
-  "method": "GET",
-  "path": "/health"
-}

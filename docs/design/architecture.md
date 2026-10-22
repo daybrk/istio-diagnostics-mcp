@@ -89,8 +89,10 @@ session/job ID, длительность, число/объём чтений, с
 
 ## Связь с прототипом
 
-Переиспользуются чистые модели и поддержанные правила `internal/diagnostics`.
-`internal/live` получает logs, управляемый port-forward и per-pod coverage.
-`internal/server` переходит от snapshot к sessions и целевому контракту.
-Новые границы — session store, log adapters, coordinator, playbooks, ASTRA adapter.
-Детальный порядок изменения файлов относится к последующему плану реализации.
+Прототип сохранён в архивной ветке, а его cmd/internal удалены из текущего дерева.
+Новый server/collector строится по целевым контрактам, без совместимости со старым
+snapshot API. Отдельные правила и сценарии из архивного `internal/diagnostics`
+можно перенести после проверки семантики и адаптации к новым evidence-моделям.
+Границы — session store, log adapters, coordinator, playbooks, ASTRA adapter.
+[Описание очистки](rewrite-baseline.md) фиксирует архив и сохранённые артефакты;
+порядок реализации компонентов относится к отдельному плану.
