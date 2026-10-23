@@ -1,0 +1,25 @@
+{
+  "schema_version": "2026-10-22",
+  "transport": "stdio",
+  "kube": {
+    "kubeconfig_path": "/etc/istio-diagnostics/kubeconfig",
+    "contexts": [
+      {
+        "context": "test-cluster"
+      }
+    ]
+  },
+  "limits": {
+    "max_sessions": 16,
+    "session_idle_ttl_seconds": 1800,
+    "memory_bytes": 268435456,
+    "pod_concurrency": 4,
+    "port_forward_concurrency": 2,
+    "request_timeout_seconds": 15,
+    "operation_budget_seconds": 120,
+    "max_log_bytes": 8388608,
+    "max_envoy_response_bytes": 33554432,
+    "max_tool_response_bytes": 524288
+  },
+  "astra": {}
+}

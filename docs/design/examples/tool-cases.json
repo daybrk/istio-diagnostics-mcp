@@ -1,0 +1,1194 @@
+{
+  "contract_version": "2026-10-22",
+  "synthetic": true,
+  "cases": [
+    {
+      "case": "capabilities-astra-disabled",
+      "tool": "get_capabilities",
+      "input": {},
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "server_version": "design-only",
+          "contract_version": "2026-10-22",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "transports": [
+            "stdio",
+            "streamable_http"
+          ],
+          "scope": [
+            {
+              "context": "test-cluster",
+              "namespaces": [
+                "*"
+              ]
+            }
+          ],
+          "formats": [
+            "istio_access_text",
+            "known_json"
+          ],
+          "supported_checks": [
+            "SERVICE_ENDPOINTS",
+            "TLS_VALIDITY"
+          ],
+          "limits": {
+            "session_ttl_seconds": 1800,
+            "max_sessions": 16,
+            "operation_budget_seconds": 120,
+            "response_bytes": 524288
+          },
+          "astra": {
+            "enabled": false,
+            "status": "disabled",
+            "actions": []
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "resolve-one-workload",
+      "tool": "resolve_workload",
+      "input": {
+        "context": "test-cluster",
+        "namespace": "shop",
+        "kind": "Deployment",
+        "name": "checkout"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "candidates": [
+            {
+              "workload": {
+                "context": "test-cluster",
+                "namespace": "shop",
+                "kind": "Deployment",
+                "name": "checkout",
+                "uid": "deployment-checkout"
+              },
+              "pod_count": 2
+            }
+          ],
+          "truncated": false
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "start-explicit-pair",
+      "tool": "start_diagnosis",
+      "input": {
+        "operation_id": "op-start",
+        "workload": {
+          "context": "test-cluster",
+          "namespace": "shop",
+          "kind": "Deployment",
+          "name": "checkout"
+        },
+        "direction": "outbound",
+        "peer": {
+          "kind": "service",
+          "value": "inventory",
+          "namespace": "backend",
+          "port": 8080,
+          "protocol": "http"
+        },
+        "time_window": {
+          "lookback_seconds": 2400
+        }
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "collecting",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-start",
+              "kind": "diagnostic",
+              "status": "queued",
+              "completed_units": 0,
+              "total_units": 0
+            }
+          ],
+          "connections": [],
+          "findings": [],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 0,
+            "attempted_pods": 0,
+            "collected_pods": 0,
+            "partial_pods": 0,
+            "unavailable_pods": 0,
+            "pending_pods": 0,
+            "entries": [],
+            "limitations": []
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [],
+            "known_facts": [],
+            "gaps": [],
+            "next_step": "Дождаться сбора",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 0,
+            "findings": 0,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 0
+          }
+        },
+        "warnings": [],
+        "next_actions": [
+          {
+            "action": "poll",
+            "tool": "get_diagnosis",
+            "instructions": "Прочитать прогресс diag-example."
+          }
+        ]
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "clarify-direction",
+      "tool": "start_diagnosis",
+      "input": {
+        "operation_id": "op-clarify",
+        "workload": {
+          "context": "test-cluster",
+          "namespace": "shop",
+          "kind": "Deployment",
+          "name": "checkout"
+        }
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "needs_clarification",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "needs_clarification",
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [],
+          "connections": [],
+          "findings": [],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 0,
+            "attempted_pods": 0,
+            "collected_pods": 0,
+            "partial_pods": 0,
+            "unavailable_pods": 0,
+            "pending_pods": 0,
+            "entries": [],
+            "limitations": []
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [],
+            "known_facts": [],
+            "gaps": [],
+            "next_step": "Уточнить direction",
+            "remaining_count": 0
+          },
+          "question": {
+            "field": "direction",
+            "message": "Проблема с исходящими или входящими соединениями checkout?",
+            "options": [
+              "outbound",
+              "inbound"
+            ]
+          },
+          "totals": {
+            "connections": 0,
+            "findings": 0,
+            "knowledge": 0,
+            "jobs": 0,
+            "coverage_entries": 0
+          }
+        },
+        "warnings": [],
+        "next_actions": [
+          {
+            "action": "clarify",
+            "instructions": "Спросить направление; не начинать сбор."
+          }
+        ]
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "partial-result",
+      "tool": "get_diagnosis",
+      "input": {
+        "diagnosis_id": "diag-example"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "partial",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "awaiting_next",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-start",
+              "kind": "diagnostic",
+              "status": "partial",
+              "completed_units": 2,
+              "total_units": 2
+            }
+          ],
+          "connections": [
+            {
+              "id": "conn-inventory",
+              "source": "shop/checkout",
+              "destination": "backend/inventory",
+              "port": 8080,
+              "protocol": "http",
+              "status": "investigated",
+              "observation_count": 12,
+              "count_semantics": "log_records",
+              "last_seen": "2026-10-22T10:39:00Z",
+              "pod_uids": [
+                "pod-source-1"
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "id": "finding-1",
+              "rule_id": "SERVICE_ENDPOINTS",
+              "check_status": "FAIL",
+              "confidence": "probable",
+              "summary": "Текущий набор endpoints пуст; связь с историческими отказами ещё не подтверждена.",
+              "evidence_ids": [
+                "ev-endpoints"
+              ],
+              "affected_pod_uids": [
+                "pod-source-1"
+              ],
+              "missing_evidence": [
+                "Состав endpoints в момент ошибки"
+              ],
+              "recommendation": "Проверить selector и readiness backend.",
+              "validation": "После исправления повторить запрос и собрать новую попытку."
+            }
+          ],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 2,
+            "attempted_pods": 2,
+            "collected_pods": 1,
+            "partial_pods": 0,
+            "unavailable_pods": 1,
+            "pending_pods": 0,
+            "entries": [
+              {
+                "pod_uid": "pod-source-2",
+                "namespace": "shop",
+                "pod": "checkout-2",
+                "source": "config_dump",
+                "status": "forbidden",
+                "detail": "Нет права pods/portforward"
+              }
+            ],
+            "limitations": [
+              "Не получен dump второй реплики; запись entries здесь показывает только пробел."
+            ]
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [
+              "SERVICE_ENDPOINTS"
+            ],
+            "known_facts": [
+              "Текущий EndpointSlice не содержит backend."
+            ],
+            "gaps": [
+              "Нет dump второй source-реплики."
+            ],
+            "next_step": "Показать ограничения и предложить повторную проверку.",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 1,
+            "findings": 1,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 1
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "investigate-selected",
+      "tool": "investigate_connection",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "connection_id": "conn-inventory",
+        "operation_id": "op-investigate"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "investigating",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-investigate",
+              "kind": "diagnostic",
+              "status": "running",
+              "completed_units": 0,
+              "total_units": 0
+            }
+          ],
+          "connections": [],
+          "findings": [],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 0,
+            "attempted_pods": 0,
+            "collected_pods": 0,
+            "partial_pods": 0,
+            "unavailable_pods": 0,
+            "pending_pods": 0,
+            "entries": [],
+            "limitations": []
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [],
+            "known_facts": [],
+            "gaps": [],
+            "next_step": "Дождаться сбора",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 0,
+            "findings": 0,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 0
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "read-evidence",
+      "tool": "get_evidence",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "evidence_id": "ev-endpoints"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "id": "ev-endpoints",
+          "attempt_id": "attempt-1",
+          "source_type": "kubernetes",
+          "collected_at": "2026-10-22T10:40:02Z",
+          "source_locator": "discovery.k8s.io/v1/EndpointSlice/backend/inventory-example#/endpoints",
+          "resource_uid": "slice-example",
+          "namespace": "backend",
+          "lines": [
+            "endpoints: []"
+          ],
+          "offset": 0,
+          "truncated": false
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "refresh-compare",
+      "tool": "refresh_diagnosis",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "operation_id": "op-refresh",
+        "time_window": {
+          "lookback_seconds": 900
+        },
+        "compare_to_attempt_id": "attempt-1"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "collecting",
+          "attempt_id": "attempt-2",
+          "window": {
+            "start": "2026-10-22T10:45:00Z",
+            "end": "2026-10-22T11:00:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T11:00:00Z",
+          "expires_at": "2026-10-22T11:30:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-refresh",
+              "kind": "diagnostic",
+              "status": "queued",
+              "completed_units": 0,
+              "total_units": 0
+            }
+          ],
+          "connections": [],
+          "findings": [],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 0,
+            "attempted_pods": 0,
+            "collected_pods": 0,
+            "partial_pods": 0,
+            "unavailable_pods": 0,
+            "pending_pods": 0,
+            "entries": [],
+            "limitations": []
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [],
+            "known_facts": [],
+            "gaps": [],
+            "next_step": "Дождаться сбора",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 0,
+            "findings": 0,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 0
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "comparison-no-traffic",
+      "tool": "get_diagnosis",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "attempt_id": "attempt-2"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "awaiting_next",
+          "attempt_id": "attempt-2",
+          "window": {
+            "start": "2026-10-22T10:45:00Z",
+            "end": "2026-10-22T11:00:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T11:00:00Z",
+          "expires_at": "2026-10-22T11:30:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-refresh",
+              "kind": "diagnostic",
+              "status": "completed",
+              "completed_units": 0,
+              "total_units": 0
+            }
+          ],
+          "connections": [],
+          "findings": [],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 0,
+            "attempted_pods": 0,
+            "collected_pods": 0,
+            "partial_pods": 0,
+            "unavailable_pods": 0,
+            "pending_pods": 0,
+            "entries": [],
+            "limitations": []
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [],
+            "known_facts": [],
+            "gaps": [],
+            "next_step": "Дождаться сбора",
+            "remaining_count": 0
+          },
+          "comparison": {
+            "baseline_attempt_id": "attempt-1",
+            "current_attempt_id": "attempt-2",
+            "configuration_changes": [
+              "Появился ready endpoint."
+            ],
+            "symptom_changes": [
+              "Новые обращения в окне не наблюдались."
+            ],
+            "conclusion": "inconclusive",
+            "limitations": [
+              "Без нового трафика исправление связности не подтверждено."
+            ]
+          },
+          "totals": {
+            "connections": 0,
+            "findings": 0,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 0
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "cancel-job",
+      "tool": "cancel_operation",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "operation_id": "op-start"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "partial",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "awaiting_next",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-start",
+              "kind": "diagnostic",
+              "status": "cancelled",
+              "completed_units": 2,
+              "total_units": 2,
+              "stop_reason": "Отменено пользователем"
+            }
+          ],
+          "connections": [
+            {
+              "id": "conn-inventory",
+              "source": "shop/checkout",
+              "destination": "backend/inventory",
+              "port": 8080,
+              "protocol": "http",
+              "status": "investigated",
+              "observation_count": 12,
+              "count_semantics": "log_records",
+              "last_seen": "2026-10-22T10:39:00Z",
+              "pod_uids": [
+                "pod-source-1"
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "id": "finding-1",
+              "rule_id": "SERVICE_ENDPOINTS",
+              "check_status": "FAIL",
+              "confidence": "probable",
+              "summary": "Текущий набор endpoints пуст; связь с историческими отказами ещё не подтверждена.",
+              "evidence_ids": [
+                "ev-endpoints"
+              ],
+              "affected_pod_uids": [
+                "pod-source-1"
+              ],
+              "missing_evidence": [
+                "Состав endpoints в момент ошибки"
+              ],
+              "recommendation": "Проверить selector и readiness backend.",
+              "validation": "После исправления повторить запрос и собрать новую попытку."
+            }
+          ],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 2,
+            "attempted_pods": 2,
+            "collected_pods": 1,
+            "partial_pods": 0,
+            "unavailable_pods": 1,
+            "pending_pods": 0,
+            "entries": [
+              {
+                "pod_uid": "pod-source-2",
+                "namespace": "shop",
+                "pod": "checkout-2",
+                "source": "config_dump",
+                "status": "forbidden",
+                "detail": "Нет права pods/portforward"
+              }
+            ],
+            "limitations": [
+              "Не получен dump второй реплики; запись entries здесь показывает только пробел."
+            ]
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [
+              "SERVICE_ENDPOINTS"
+            ],
+            "known_facts": [
+              "Текущий EndpointSlice не содержит backend."
+            ],
+            "gaps": [
+              "Нет dump второй source-реплики."
+            ],
+            "next_step": "Показать ограничения и предложить повторную проверку.",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 1,
+            "findings": 1,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 1
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "close",
+      "tool": "close_diagnosis",
+      "input": {
+        "diagnosis_id": "diag-example"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "closed",
+          "closed_at": "2026-10-22T11:01:00Z"
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "get-main",
+      "tool": "get_playbook",
+      "input": {
+        "module_id": "main"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "module_id": "main",
+          "bundle_version": "2026-10-23.2",
+          "content": "Фрагмент синтетического примера; полный текст хранится в prompts/main.md.",
+          "required_capabilities": [
+            "tools"
+          ],
+          "related_modules": [
+            "intake",
+            "investigation",
+            "evidence",
+            "report"
+          ]
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "astra-disabled",
+      "tool": "get_product_context",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "operation_id": "op-astra",
+        "action": "ask",
+        "project_id": "SHOP",
+        "question": "Какие внутренние зависимости нужны checkout?"
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "error",
+        "warnings": [],
+        "next_actions": [
+          {
+            "action": "continue",
+            "tool": "get_diagnosis",
+            "instructions": "Продолжить основную диагностику без ASTRA."
+          }
+        ],
+        "error": {
+          "code": "INTEGRATION_DISABLED",
+          "message": "ASTRA отключена оператором.",
+          "retryable": false
+        }
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "astra-source-when-enabled",
+      "tool": "get_product_context",
+      "input": {
+        "diagnosis_id": "diag-example",
+        "operation_id": "op-source",
+        "action": "source",
+        "project_id": "SHOP",
+        "repo": "checkout",
+        "path": "docs/dependencies.md",
+        "offset": 1,
+        "limit": 80
+      },
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "awaiting_next",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-start",
+              "kind": "diagnostic",
+              "status": "partial",
+              "completed_units": 2,
+              "total_units": 2
+            }
+          ],
+          "connections": [
+            {
+              "id": "conn-inventory",
+              "source": "shop/checkout",
+              "destination": "backend/inventory",
+              "port": 8080,
+              "protocol": "http",
+              "status": "investigated",
+              "observation_count": 12,
+              "count_semantics": "log_records",
+              "last_seen": "2026-10-22T10:39:00Z",
+              "pod_uids": [
+                "pod-source-1"
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "id": "finding-1",
+              "rule_id": "SERVICE_ENDPOINTS",
+              "check_status": "FAIL",
+              "confidence": "probable",
+              "summary": "Текущий набор endpoints пуст; связь с историческими отказами ещё не подтверждена.",
+              "evidence_ids": [
+                "ev-endpoints"
+              ],
+              "affected_pod_uids": [
+                "pod-source-1"
+              ],
+              "missing_evidence": [
+                "Состав endpoints в момент ошибки"
+              ],
+              "recommendation": "Проверить selector и readiness backend.",
+              "validation": "После исправления повторить запрос и собрать новую попытку."
+            }
+          ],
+          "knowledge": [
+            {
+              "id": "knowledge-1",
+              "action": "source",
+              "status": "available",
+              "summary": "Источник описывает порт; применимость к deployed image не установлена.",
+              "evidence_ids": [
+                "ev-product"
+              ],
+              "project_id": "SHOP",
+              "revision": "unknown"
+            }
+          ],
+          "coverage": {
+            "discovered_pods": 2,
+            "attempted_pods": 2,
+            "collected_pods": 1,
+            "partial_pods": 0,
+            "unavailable_pods": 1,
+            "pending_pods": 0,
+            "entries": [
+              {
+                "pod_uid": "pod-source-2",
+                "namespace": "shop",
+                "pod": "checkout-2",
+                "source": "config_dump",
+                "status": "forbidden",
+                "detail": "Нет права pods/portforward"
+              }
+            ],
+            "limitations": [
+              "Не получен dump второй реплики; запись entries здесь показывает только пробел."
+            ]
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [
+              "SERVICE_ENDPOINTS"
+            ],
+            "known_facts": [
+              "Текущий EndpointSlice не содержит backend."
+            ],
+            "gaps": [
+              "Нет dump второй source-реплики."
+            ],
+            "next_step": "Показать ограничения и предложить повторную проверку.",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 1,
+            "findings": 1,
+            "knowledge": 1,
+            "jobs": 1,
+            "coverage_entries": 1
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "input_valid": true,
+      "output_valid": true
+    },
+    {
+      "case": "reject-shell-argument",
+      "tool": "get_capabilities",
+      "input": {
+        "command": "kubectl exec"
+      },
+      "input_valid": false
+    },
+    {
+      "case": "reject-mixed-window",
+      "tool": "refresh_diagnosis",
+      "input": {
+        "diagnosis_id": "d",
+        "operation_id": "o",
+        "time_window": {
+          "lookback_seconds": 900,
+          "start": "2026-10-22T10:00:00Z",
+          "end": "2026-10-22T11:00:00Z"
+        }
+      },
+      "input_valid": false
+    },
+    {
+      "case": "reject-source-without-project",
+      "tool": "get_product_context",
+      "input": {
+        "diagnosis_id": "d",
+        "operation_id": "o",
+        "action": "source",
+        "repo": "r",
+        "path": "p"
+      },
+      "input_valid": false
+    },
+    {
+      "case": "reject-selector-with-name",
+      "tool": "resolve_workload",
+      "input": {
+        "kind": "Selector",
+        "name": "checkout",
+        "selector": "app=checkout"
+      },
+      "input_valid": false
+    },
+    {
+      "case": "reject-zero-port",
+      "tool": "start_diagnosis",
+      "input": {
+        "operation_id": "o",
+        "peer": {
+          "kind": "service",
+          "value": "inventory",
+          "port": 0
+        }
+      },
+      "input_valid": false
+    },
+    {
+      "case": "reject-confirmed-without-evidence",
+      "tool": "get_diagnosis",
+      "input": {
+        "diagnosis_id": "diag-example"
+      },
+      "input_valid": true,
+      "output": {
+        "contract_version": "2026-10-22",
+        "outcome": "ok",
+        "data": {
+          "diagnosis_id": "diag-example",
+          "state": "awaiting_next",
+          "attempt_id": "attempt-1",
+          "window": {
+            "start": "2026-10-22T10:00:00Z",
+            "end": "2026-10-22T10:40:00Z"
+          },
+          "workload": {
+            "context": "test-cluster",
+            "namespace": "shop",
+            "kind": "Deployment",
+            "name": "checkout",
+            "uid": "deployment-checkout"
+          },
+          "direction": "outbound",
+          "created_at": "2026-10-22T10:40:00Z",
+          "updated_at": "2026-10-22T10:40:00Z",
+          "expires_at": "2026-10-22T11:10:00Z",
+          "prompt_bundle": "2026-10-23.2",
+          "ruleset_version": "2026-10-22",
+          "jobs": [
+            {
+              "operation_id": "op-start",
+              "kind": "diagnostic",
+              "status": "partial",
+              "completed_units": 2,
+              "total_units": 2
+            }
+          ],
+          "connections": [
+            {
+              "id": "conn-inventory",
+              "source": "shop/checkout",
+              "destination": "backend/inventory",
+              "port": 8080,
+              "protocol": "http",
+              "status": "investigated",
+              "observation_count": 12,
+              "count_semantics": "log_records",
+              "last_seen": "2026-10-22T10:39:00Z",
+              "pod_uids": [
+                "pod-source-1"
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "id": "finding-1",
+              "rule_id": "SERVICE_ENDPOINTS",
+              "check_status": "FAIL",
+              "confidence": "confirmed",
+              "summary": "Текущий набор endpoints пуст; связь с историческими отказами ещё не подтверждена.",
+              "evidence_ids": [],
+              "affected_pod_uids": [
+                "pod-source-1"
+              ],
+              "missing_evidence": [
+                "Состав endpoints в момент ошибки"
+              ],
+              "recommendation": "Проверить selector и readiness backend.",
+              "validation": "После исправления повторить запрос и собрать новую попытку."
+            }
+          ],
+          "knowledge": [],
+          "coverage": {
+            "discovered_pods": 2,
+            "attempted_pods": 2,
+            "collected_pods": 1,
+            "partial_pods": 0,
+            "unavailable_pods": 1,
+            "pending_pods": 0,
+            "entries": [
+              {
+                "pod_uid": "pod-source-2",
+                "namespace": "shop",
+                "pod": "checkout-2",
+                "source": "config_dump",
+                "status": "forbidden",
+                "detail": "Нет права pods/portforward"
+              }
+            ],
+            "limitations": [
+              "Не получен dump второй реплики; запись entries здесь показывает только пробел."
+            ]
+          },
+          "resume_summary": {
+            "scope_summary": "checkout, shop, outbound",
+            "checked_rule_ids": [
+              "SERVICE_ENDPOINTS"
+            ],
+            "known_facts": [
+              "Текущий EndpointSlice не содержит backend."
+            ],
+            "gaps": [
+              "Нет dump второй source-реплики."
+            ],
+            "next_step": "Показать ограничения и предложить повторную проверку.",
+            "remaining_count": 0
+          },
+          "totals": {
+            "connections": 1,
+            "findings": 1,
+            "knowledge": 0,
+            "jobs": 1,
+            "coverage_entries": 1
+          }
+        },
+        "warnings": [],
+        "next_actions": []
+      },
+      "output_valid": false
+    }
+  ]
+}
