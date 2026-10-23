@@ -16,7 +16,7 @@ LLM сервера и не исполняются Go как программа.
 | evidence | [evidence.md](evidence.md) | Перед причинным выводом или при противоречиях |
 | report | [report.md](report.md) | Перед ответом пользователю |
 | recheck | [recheck.md](recheck.md) | Пользователь исправил проблему/повторил запрос |
-| astra | [integrations/astra.md](integrations/astra.md) | Только enabled и нужен контекст продукта |
+| astra | [integrations/astra.md](integrations/astra.md) | Пользователь запросил ASTRA, интеграция настроена и нужен контекст продукта/Istio |
 
 Основной механизм — `get_playbook(module_id, diagnosis_id?)`. С diagnosis_id
 сервер отдаёт pinned bundle. Нельзя считать, что Markdown-ссылка уже загрузила

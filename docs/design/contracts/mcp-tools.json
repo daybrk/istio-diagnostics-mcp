@@ -165,7 +165,7 @@
     },
     {
       "name": "get_product_context",
-      "description": "Optional ASTRA: каталог, вопрос, поиск или чтение источника. Disabled/недоступность не блокируют основную диагностику.",
+      "description": "Optional ASTRA: каталог, вопрос, поиск или чтение источника. Disabled/недоступность не блокируют основную диагностику. Если пользователь указал project ID для ASTRA, передавайте его явно без обязательного catalog. Используйте при пробелах в понимании продукта или Istio-конфигурации; project ID не расширяет назначенные права.",
       "inputSchema": {
         "$ref": "mcp.schema.json#/$defs/get_product_contextInput"
       },

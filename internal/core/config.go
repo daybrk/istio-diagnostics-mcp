@@ -50,13 +50,29 @@ type Binding struct {
 	AstraProjects []string `json:"astra_projects"`
 }
 type AstraConfig struct {
-	Enabled              bool     `json:"enabled"`
+	Enabled              *bool    `json:"enabled,omitempty"` // Legacy override; nil means infer from settings.
 	DefaultURL           string   `json:"default_url,omitempty"`
 	AgentURL             string   `json:"agent_url,omitempty"`
 	CredentialEnv        string   `json:"credential_env,omitempty"`
-	AllowedProjects      []string `json:"allowed_projects,omitempty"`
+	AllowedProjects      []string `json:"allowed_projects,omitzero"` // nil: upstream credential scope; empty: deny all.
 	RequestBudgetSeconds int      `json:"request_budget_seconds,omitempty"`
 	MaxResponseBytes     int      `json:"max_response_bytes,omitempty"`
+}
+
+func (c AstraConfig) Available() bool {
+	return (c.Enabled == nil || *c.Enabled) && c.CredentialEnv != "" && (c.DefaultURL != "" || c.AgentURL != "")
+}
+
+func (c AstraConfig) ProjectAllowed(id string) bool {
+	if c.AllowedProjects == nil {
+		return true
+	}
+	for _, allowed := range c.AllowedProjects {
+		if allowed == id {
+			return true
+		}
+	}
+	return false
 }
 
 func ParseConfig(b []byte) (Config, error) {
@@ -94,12 +110,18 @@ func ParseConfig(b []byte) (Config, error) {
 			}
 		}
 	}
-	if c.Astra.Enabled {
+	if c.Astra.Available() {
 		for _, u := range []string{c.Astra.DefaultURL, c.Astra.AgentURL} {
 			if u != "" && !HTTPSURL(u) {
 				return c, fmt.Errorf("ASTRA endpoints must be HTTPS")
 			}
 		}
+	}
+	if c.Astra.RequestBudgetSeconds == 0 {
+		c.Astra.RequestBudgetSeconds = 45
+	}
+	if c.Astra.MaxResponseBytes == 0 {
+		c.Astra.MaxResponseBytes = 1 << 20
 	}
 	return c, nil
 }
@@ -108,7 +130,7 @@ func HTTPSURL(raw string) bool {
 	return e == nil && u.Scheme == "https" && u.Host != "" && u.User == nil && u.Fragment == ""
 }
 func (c Config) LocalPrincipal() Principal {
-	return Principal{ID: "local", Scopes: c.Kube.Contexts, AstraProjects: c.Astra.AllowedProjects}
+	return Principal{ID: "local", Scopes: c.Kube.Contexts, AstraProjects: c.Astra.AllowedProjects, AstraCredentialScope: c.Astra.AllowedProjects == nil}
 }
 func IntersectScopes(a, b []Scope) []Scope {
 	out := []Scope{}

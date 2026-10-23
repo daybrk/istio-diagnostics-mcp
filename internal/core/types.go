@@ -12,6 +12,8 @@ type Principal struct {
 	ID            string
 	Scopes        []Scope
 	AstraProjects []string
+	// Set only for the local stdio principal; never inferred for HTTP subjects.
+	AstraCredentialScope bool
 }
 
 func (p Principal) Allows(context, namespace string) bool {

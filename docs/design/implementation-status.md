@@ -1,4 +1,4 @@
-# Статус реализации · 22 октября 2026
+# Статус реализации · 23 октября 2026
 
 [Навигация](README.md) · [Запуск](../../README.md) · [План](../superpowers/plans/2026-10-22-live-readonly-implementation.md)
 
@@ -8,13 +8,13 @@
 | Область | Реализованное поведение | Граница |
 |---|---|---|
 | MCP | 11 инструментов, self-contained schemas, JSON в text и structuredContent | Контракт `2026-10-22`; транспорт согласует MCP через SDK |
-| Инструкции | Семь встроенных модулей, resources и prompt | Модули версионированы manifest; ASTRA tool-модуль не выдаётся при disabled |
+| Инструкции | Семь встроенных модулей bundle `2026-10-23`, resources и prompt | Модули версионированы manifest; ASTRA tool-модуль не выдаётся при disabled |
 | Сессии | Ownership, TTL, idempotency, jobs, отмена, закрытие, история attempts, cursor pagination | Только память процесса; после рестарта восстановление не обещается |
 | Сбор | Kubectl с фиксированными аргументами, owner UID, все найденные реплики, ресурсы, Events, current/previous proxy logs | Отказы доступа и недоступные форматы остаются явными пробелами |
 | Envoy | Loopback port-forward к pod:15000, четыре фиксированных GET, лимиты и UID monitoring | Нет active probes и /stats; текущая конфигурация не является исторической |
 | Анализ | Проверки состояния proxy, Service/EndpointSlice/ports, route/cluster, xDS, TLS, policy subset, симптомов и различий реплик | Консервативные подмножества семантики; unsupported/unknown не скрываются |
 | HTTP | OIDC JWT RS256, issuer/audience/expiry/signature, subject bindings, Host/Origin checks | Opaque tokens и другие JWT algorithms не поддержаны; реальный provider не проверен |
-| ASTRA | Default off; фиксированные catalog/ask/search/source, project/repo scope, redaction, byte/deadline limits | Реальная установка не проверена; знания не становятся автоматическим причинным диагнозом |
+| ASTRA | Project ID из диалога, готовность по endpoint/credential settings; фиксированные catalog/ask/search/source, project/repo scope, redaction, byte/deadline limits | Реальная установка не проверена; знания не становятся автоматическим причинным диагнозом |
 | Запуск | Go binary, CLI config validation, SIGTERM cleanup, stderr JSON journal, CI | Dockerfile не собран в этой среде |
 
 ## Ограничения диагностических правил

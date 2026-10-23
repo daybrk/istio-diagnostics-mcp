@@ -183,6 +183,9 @@ func (e *Engine) lookup(p core.Principal, id string) (*session, core.Envelope) {
 // A session may contain observations from any namespace in its pinned scope.
 // If authorization narrows, hide the whole session rather than leak old data.
 func retainsScope(current, original core.Principal) bool {
+	if original.AstraCredentialScope && !current.AstraCredentialScope {
+		return false
+	}
 	for _, scope := range original.Scopes {
 		for _, namespace := range scope.Namespaces {
 			if !current.Allows(scope.Context, namespace) {
@@ -191,6 +194,9 @@ func retainsScope(current, original core.Principal) bool {
 		}
 	}
 	for _, project := range original.AstraProjects {
+		if current.AstraCredentialScope {
+			continue
+		}
 		found := false
 		for _, permitted := range current.AstraProjects {
 			if project == permitted {

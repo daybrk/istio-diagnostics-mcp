@@ -30,7 +30,7 @@ func TestHTTPIdentityAndSessionIsolation(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"keys": []any{map[string]any{"kty": "RSA", "kid": "one", "use": "sig", "alg": "RS256", "n": base64.RawURLEncoding.EncodeToString(key.N.Bytes()), "e": base64.RawURLEncoding.EncodeToString(big.NewInt(int64(key.E)).Bytes())}}})
 	}))
 	defer issuer.Close()
-	cfg := core.Config{Transport: "streamable_http", Kube: core.KubeConfig{Contexts: []core.Scope{{Context: "c", Namespaces: []string{"n"}}}}, HTTP: &core.HTTPConfig{Listen: "127.0.0.1:0", PublicURL: "https://diagnostics.example/mcp", AllowedOrigins: []string{"https://client.example"}, Auth: core.AuthConfig{Mode: "oidc", Issuer: issuer.URL, Audience: "diag", Bindings: []core.Binding{{Subject: "alice", Contexts: []core.Scope{{Context: "c", Namespaces: []string{"n", "forbidden"}}}}, {Subject: "bob"}}}}}
+	cfg := core.Config{Transport: "streamable_http", Kube: core.KubeConfig{Contexts: []core.Scope{{Context: "c", Namespaces: []string{"n"}}}}, HTTP: &core.HTTPConfig{Listen: "127.0.0.1:0", PublicURL: "https://diagnostics.example/mcp", AllowedOrigins: []string{"https://client.example"}, Auth: core.AuthConfig{Mode: "oidc", Issuer: issuer.URL, Audience: "diag", Bindings: []core.Binding{{Subject: "alice", AstraProjects: []string{"p1"}, Contexts: []core.Scope{{Context: "c", Namespaces: []string{"n", "forbidden"}}}}, {Subject: "bob"}}}}}
 	seen := make(chan core.Principal, 4)
 	h, err := newHTTPHandler(handlerFunc(func(_ context.Context, p core.Principal, _ string, _ json.RawMessage) (core.Envelope, error) {
 		seen <- p
@@ -115,6 +115,9 @@ func TestHTTPIdentityAndSessionIsolation(t *testing.T) {
 	}
 	select {
 	case p := <-seen:
+		if p.AstraCredentialScope || len(p.AstraProjects) != 1 || p.AstraProjects[0] != "p1" {
+			t.Fatalf("HTTP inherited credential-wide access or lost binding: %+v", p)
+		}
 		if p.ID != "alice" || !p.Allows("c", "n") || p.Allows("c", "forbidden") {
 			t.Fatalf("scope=%#v", p)
 		}

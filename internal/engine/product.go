@@ -15,8 +15,8 @@ func (e *Engine) product(p core.Principal, in input, hash string) core.Envelope 
 	if s.state == "closed" {
 		return core.Fail("SESSION_CLOSED", "Investigation is closed.")
 	}
-	if !e.cfg.Astra.Enabled || e.provider == nil {
-		return core.Fail("INTEGRATION_DISABLED", "ASTRA is disabled; core diagnostics remain available.")
+	if !e.cfg.Astra.Available() || e.provider == nil {
+		return core.Fail("INTEGRATION_DISABLED", "ASTRA endpoint/credentials are not configured or the legacy override disables it; core diagnostics remain available.")
 	}
 	if prev, ok := s.ops[in.OperationID]; ok {
 		if r, yes := replay(prev, hash); yes {

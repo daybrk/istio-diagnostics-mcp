@@ -51,3 +51,19 @@ func TestRedactQuotedSecretsAndCookies(t *testing.T) {
 		}
 	}
 }
+
+func TestAstraConfigAcceptsUserChosenProject(t *testing.T) {
+	b, _ := os.ReadFile("../../docs/design/examples/server-config.json")
+	var v map[string]any
+	json.Unmarshal(b, &v)
+	v["astra"] = map[string]any{"agent_url": "https://astra.example/mcp/agent", "credential_env": "ASTRA_KEY"}
+	b, _ = json.Marshal(v)
+	if _, err := ParseConfig(b); err != nil {
+		t.Fatalf("endpoint and credential should suffice: %v", err)
+	}
+	delete(v, "astra")
+	b, _ = json.Marshal(v)
+	if _, err := ParseConfig(b); err != nil {
+		t.Fatalf("core diagnostics should not require ASTRA config: %v", err)
+	}
+}

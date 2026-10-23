@@ -49,7 +49,7 @@ func filterCatalog(value any, allowed map[string]bool, selected string) ([]map[s
 			return nil, fault("UPSTREAM_CONTRACT_MISMATCH", "ASTRA project catalog has an invalid entry", false)
 		}
 		id := projectID(m)
-		if !allowed[id] || selected != "" && selected != id {
+		if allowed != nil && !allowed[id] || selected != "" && selected != id {
 			continue
 		}
 		project := map[string]any{"projectId": id}

@@ -79,7 +79,7 @@ func newServer(h core.Handler, c core.Config, remote bool) *mcp.Server {
 		if err != nil {
 			panic(err)
 		}
-		uri := "istio-diagnostics://playbook/" + design.Version + "/" + module.ID
+		uri := "istio-diagnostics://playbook/" + design.PromptVersion + "/" + module.ID
 		text := string(content)
 		s.AddResource(&mcp.Resource{URI: uri, Name: module.ID, MIMEType: "text/markdown"}, func(context.Context, *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
 			return &mcp.ReadResourceResult{Contents: []*mcp.ResourceContents{{URI: uri, MIMEType: "text/markdown", Text: text}}}, nil

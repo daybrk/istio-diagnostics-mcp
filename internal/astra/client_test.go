@@ -25,7 +25,8 @@ func expectFault(t *testing.T, err error, code string) {
 	}
 }
 func TestDisabledDoesNotReadCredentialsOrNetwork(t *testing.T) {
-	c := New(core.Config{Astra: core.AstraConfig{DefaultURL: "https://unreachable.invalid", CredentialEnv: "MISSING"}})
+	disabled := false
+	c := New(core.Config{Astra: core.AstraConfig{Enabled: &disabled, DefaultURL: "https://unreachable.invalid", CredentialEnv: "MISSING"}})
 	_, err := c.Query(context.Background(), core.Principal{}, core.ProductRequest{Action: "catalog"})
 	expectFault(t, err, "INTEGRATION_DISABLED")
 }
@@ -64,12 +65,33 @@ func fixture(t *testing.T, respond func(string, map[string]any) *mcp.CallToolRes
 	}))
 	t.Cleanup(server.Close)
 	t.Setenv("ASTRA_FIXTURE_TOKEN", "fixture-secret")
-	c := New(core.Config{Astra: core.AstraConfig{Enabled: true, DefaultURL: server.URL + "/mcp", AgentURL: server.URL + "/mcp/agent", CredentialEnv: "ASTRA_FIXTURE_TOKEN", AllowedProjects: []string{"p1", "p2"}, MaxResponseBytes: 1 << 20}})
+	c := New(core.Config{Astra: core.AstraConfig{DefaultURL: server.URL + "/mcp", AgentURL: server.URL + "/mcp/agent", CredentialEnv: "ASTRA_FIXTURE_TOKEN", AllowedProjects: []string{"p1", "p2"}, MaxResponseBytes: 1 << 20}})
 	c.httpClient = server.Client()
 	return c, &calls
 }
 func result(v any) *mcp.CallToolResult {
 	return &mcp.CallToolResult{StructuredContent: v, Content: []mcp.Content{}}
+}
+
+func TestUserSuppliedProjectWithoutCatalogOrOperatorList(t *testing.T) {
+	c, calls := fixture(t, func(name string, args map[string]any) *mcp.CallToolResult {
+		if name != "agent_loop" || args["projectId"] != "user-project" {
+			t.Errorf("unexpected call: %s %v", name, args)
+		}
+		return result(map[string]any{"answer": "Documented TLS requirements"})
+	})
+	// JSON unmarshalling intentionally leaves the legacy switch and allowlist absent.
+	var config core.Config
+	b, _ := json.Marshal(map[string]any{"astra": map[string]any{"agent_url": c.cfg.AgentURL, "credential_env": c.cfg.CredentialEnv}})
+	json.Unmarshal(b, &config)
+	c.cfg = config.Astra
+	r, err := c.Query(context.Background(), config.LocalPrincipal(), core.ProductRequest{Action: "ask", ProjectID: "user-project", Question: "Explain the Istio TLS settings"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(*calls) != 1 || r.Knowledge.ProjectID != "user-project" {
+		t.Fatalf("unexpected workflow: %v %+v", *calls, r.Knowledge)
+	}
 }
 func TestCatalogFilteringAndRequestMapping(t *testing.T) {
 	c, calls := fixture(t, func(name string, args map[string]any) *mcp.CallToolResult {
@@ -286,7 +308,7 @@ func TestHTTPFailuresRespectRetryAndRedirectPolicy(t *testing.T) {
 			}))
 			defer s.Close()
 			t.Setenv("ASTRA_HTTP_TEST_TOKEN", "secret")
-			c := New(core.Config{Astra: core.AstraConfig{Enabled: true, DefaultURL: s.URL, CredentialEnv: "ASTRA_HTTP_TEST_TOKEN", AllowedProjects: []string{"p1"}}})
+			c := New(core.Config{Astra: core.AstraConfig{DefaultURL: s.URL, CredentialEnv: "ASTRA_HTTP_TEST_TOKEN", AllowedProjects: []string{"p1"}}})
 			c.httpClient = s.Client()
 			_, err := c.Query(context.Background(), core.Principal{AstraProjects: []string{"p1"}}, core.ProductRequest{Action: "catalog"})
 			expectFault(t, err, tc.code)
@@ -315,7 +337,7 @@ func TestBudgetIncludesSessionCleanup(t *testing.T) {
 	}))
 	defer h.Close()
 	t.Setenv("ASTRA_BUDGET_TEST_TOKEN", "secret")
-	c := New(core.Config{Astra: core.AstraConfig{Enabled: true, AgentURL: h.URL, AllowedProjects: []string{"p1"}, CredentialEnv: "ASTRA_BUDGET_TEST_TOKEN", RequestBudgetSeconds: 1}})
+	c := New(core.Config{Astra: core.AstraConfig{AgentURL: h.URL, AllowedProjects: []string{"p1"}, CredentialEnv: "ASTRA_BUDGET_TEST_TOKEN", RequestBudgetSeconds: 1}})
 	c.httpClient = h.Client()
 	start := time.Now()
 	_, err := c.Query(context.Background(), core.Principal{AstraProjects: []string{"p1"}}, core.ProductRequest{Action: "ask", ProjectID: "p1", Question: "q"})
@@ -324,5 +346,72 @@ func TestBudgetIncludesSessionCleanup(t *testing.T) {
 	}
 	if elapsed := time.Since(start); elapsed > 2*time.Second {
 		t.Fatalf("operation budget extended by cleanup: %s", elapsed)
+	}
+}
+
+func TestUserProjectAuthorizationModes(t *testing.T) {
+	for _, tt := range []struct {
+		name               string
+		global             []string
+		principal          core.Principal
+		project, wantError string
+	}{
+		{"local-key-scope", nil, core.Principal{AstraCredentialScope: true}, "user-project", ""},
+		{"local-empty-list", []string{}, core.Principal{AstraCredentialScope: true}, "p1", "UPSTREAM_FORBIDDEN"},
+		{"local-explicit-list", []string{"p1"}, core.Principal{AstraCredentialScope: true}, "p2", "UPSTREAM_FORBIDDEN"},
+		{"http-bound-project", nil, core.Principal{AstraProjects: []string{"p1"}}, "p1", ""},
+		{"http-unbound", nil, core.Principal{}, "p1", "UPSTREAM_FORBIDDEN"},
+		{"http-other-project", nil, core.Principal{AstraProjects: []string{"p1"}}, "p2", "UPSTREAM_FORBIDDEN"},
+		{"http-global-intersection", []string{"p2"}, core.Principal{AstraProjects: []string{"p1"}}, "p1", "UPSTREAM_FORBIDDEN"},
+		{"missing-project", nil, core.Principal{AstraCredentialScope: true}, "", "PROJECT_SELECTION_REQUIRED"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			c, calls := fixture(t, func(name string, args map[string]any) *mcp.CallToolResult {
+				if name != "agent_loop" || args["projectId"] != tt.project {
+					t.Errorf("unexpected request: %s %+v", name, args)
+				}
+				return result(map[string]any{"answer": "ok"})
+			})
+			c.cfg.AllowedProjects = tt.global
+			_, err := c.Query(context.Background(), tt.principal, core.ProductRequest{Action: "ask", ProjectID: tt.project, Question: "q"})
+			if tt.wantError != "" {
+				expectFault(t, err, tt.wantError)
+				if len(*calls) != 0 {
+					t.Fatalf("forbidden/invalid call reached upstream: %v", *calls)
+				}
+			} else if err != nil || len(*calls) != 1 {
+				t.Fatalf("err=%v calls=%v", err, *calls)
+			}
+		})
+	}
+}
+
+func TestCatalogUsesCredentialScopeOnlyForLocalPrincipal(t *testing.T) {
+	c, _ := fixture(t, func(string, map[string]any) *mcp.CallToolResult {
+		return result(map[string]any{"projects": []any{map[string]any{"projectId": "p1"}, map[string]any{"projectId": "p2"}}})
+	})
+	c.cfg.AllowedProjects = nil
+	for _, p := range []core.Principal{{AstraCredentialScope: true}, {AstraProjects: []string{"p1"}}} {
+		r, err := c.Query(context.Background(), p, core.ProductRequest{Action: "catalog"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := json.Marshal(r)
+		if strings.Contains(string(b), "p2") != p.AstraCredentialScope {
+			t.Fatalf("catalog scope mismatch: %s", b)
+		}
+	}
+}
+
+func TestMissingCredentialDoesNotContactUpstream(t *testing.T) {
+	c, calls := fixture(t, func(string, map[string]any) *mcp.CallToolResult {
+		t.Error("unexpected upstream call")
+		return result(nil)
+	})
+	t.Setenv(c.cfg.CredentialEnv, "")
+	_, err := c.Query(context.Background(), core.Principal{AstraProjects: []string{"p1"}}, core.ProductRequest{Action: "ask", ProjectID: "p1", Question: "q"})
+	expectFault(t, err, "UPSTREAM_UNAVAILABLE")
+	if len(*calls) != 0 {
+		t.Fatal("missing key caused I/O")
 	}
 }

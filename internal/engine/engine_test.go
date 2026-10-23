@@ -278,7 +278,7 @@ func TestOptionalProductFailureDoesNotEndDiagnosticJob(t *testing.T) {
 	e, f, p := setup(t)
 	f.block = make(chan struct{})
 	e.mu.Lock()
-	e.cfg.Astra.Enabled = true
+	e.cfg.Astra = core.AstraConfig{AgentURL: "https://astra.example/mcp/agent", CredentialEnv: "ASTRA_TEST"}
 	e.provider = productFunc(func(context.Context, core.Principal, core.ProductRequest) (core.ProductResult, error) {
 		return core.ProductResult{}, &core.Fault{Code: "UPSTREAM_FORBIDDEN", Message: "Product access denied"}
 	})

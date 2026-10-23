@@ -26,7 +26,5 @@
     "max_envoy_response_bytes": 33554432,
     "max_tool_response_bytes": 524288
   },
-  "astra": {
-    "enabled": false
-  }
+  "astra": {}
 }

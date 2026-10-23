@@ -159,7 +159,7 @@ func (p *reviewProvider) Query(ctx context.Context, _ core.Principal, _ core.Pro
 }
 func TestReviewHistoricalKnowledgeCompletion(t *testing.T) {
 	e, f, p := setup(t)
-	e.cfg.Astra.Enabled = true
+	e.cfg.Astra = core.AstraConfig{AgentURL: "https://astra.example/mcp/agent", CredentialEnv: "ASTRA_TEST"}
 	provider := &reviewProvider{started: make(chan struct{}), unblock: make(chan struct{})}
 	e.provider = provider
 	d := diagnosis(t, call(t, e, p, "start_diagnosis", startArgs("first")))

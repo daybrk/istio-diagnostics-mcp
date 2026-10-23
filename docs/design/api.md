@@ -133,6 +133,12 @@ principal+operation_id. Для остальных — principal+diagnosis_id+ope
 уже работающей операции. Optional ASTRA job имеет отдельную квоту. Re-read ничего
 не запускает. Retry сети/ASTRA ограничен и не сбрасывает общий deadline.
 
+`capabilities.astra.enabled` вычисляется по наличию endpoint/credential settings
+и legacy override; обязательного `enabled` в server config нет. Пользовательский
+project ID передаётся явно в `get_product_context`, предварительный catalog не
+требуется. Клиентский агент вызывает ASTRA по запросу пользователя при пробелах
+в знаниях. Права и настройка описаны в [контракте ASTRA](astra.md).
+
 ## Пагинация и чтение evidence
 
 `get_diagnosis.limit`: default 20, max 100 элементов каждой коллекции. cursor

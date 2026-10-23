@@ -41,15 +41,23 @@ func TestEmbeddedContractCases(t *testing.T) {
 func TestEmbeddedPromptHashes(t *testing.T) {
 	b, _ := Files.ReadFile("prompts/manifest.json")
 	var m struct {
-		Modules []struct{ Path, SHA256 string }
+		Bundle   string `json:"bundle_version"`
+		Contract string `json:"contract_version"`
+		Modules  []struct{ Path, SHA256, Version string }
 	}
 	if e := json.Unmarshal(b, &m); e != nil {
 		t.Fatal(e)
+	}
+	if m.Bundle != PromptVersion || m.Contract != Version {
+		t.Fatalf("stale manifest: %+v", m)
 	}
 	if len(m.Modules) != 7 {
 		t.Fatal("missing modules")
 	}
 	for _, module := range m.Modules {
+		if module.Version != PromptVersion {
+			t.Fatalf("stale module version: %+v", module)
+		}
 		b, e := Files.ReadFile("prompts/" + module.Path)
 		if e != nil {
 			t.Fatal(e)

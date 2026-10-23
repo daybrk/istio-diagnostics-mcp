@@ -12,7 +12,7 @@
         "data": {
           "server_version": "design-only",
           "contract_version": "2026-10-22",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "transports": [
             "stdio",
@@ -131,7 +131,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -211,7 +211,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [],
           "connections": [],
@@ -290,7 +290,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -417,7 +417,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -526,7 +526,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T11:00:00Z",
           "expires_at": "2026-10-22T11:30:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -601,7 +601,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T11:00:00Z",
           "expires_at": "2026-10-22T11:30:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -690,7 +690,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -819,7 +819,7 @@
         "outcome": "ok",
         "data": {
           "module_id": "main",
-          "bundle_version": "2026-10-22",
+          "bundle_version": "2026-10-23",
           "content": "Фрагмент синтетического примера; полный текст хранится в prompts/main.md.",
           "required_capabilities": [
             "tools"
@@ -902,7 +902,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {
@@ -1097,7 +1097,7 @@
           "created_at": "2026-10-22T10:40:00Z",
           "updated_at": "2026-10-22T10:40:00Z",
           "expires_at": "2026-10-22T11:10:00Z",
-          "prompt_bundle": "2026-10-22",
+          "prompt_bundle": "2026-10-23",
           "ruleset_version": "2026-10-22",
           "jobs": [
             {

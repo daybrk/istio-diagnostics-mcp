@@ -81,6 +81,15 @@ func TestHandshakeCatalogAndEnvelope(t *testing.T) {
 	if err != nil || len(resources.Resources) != 7 {
 		t.Fatalf("resources %v %v", resources, err)
 	}
+	for _, resource := range resources.Resources {
+		if !strings.HasPrefix(resource.URI, "istio-diagnostics://playbook/2026-10-23/") {
+			t.Fatalf("stale resource URI: %s", resource.URI)
+		}
+		content, err := cs.ReadResource(context.Background(), &mcp.ReadResourceParams{URI: resource.URI})
+		if err != nil || len(content.Contents) != 1 || content.Contents[0].URI != resource.URI {
+			t.Fatalf("resource mismatch: %+v %v", content, err)
+		}
+	}
 }
 func TestInvalidArgumentsAreProtocolError(t *testing.T) {
 	called := false

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/daybrk/istio-diagnostics-mcp/docs/design"
 	"github.com/daybrk/istio-diagnostics-mcp/internal/core"
 	"strings"
 )
@@ -55,7 +56,7 @@ func (e *Engine) decodeCursor(v string) (cursor, error) {
 	return c, nil
 }
 func (e *Engine) view(s *session, a *attempt, limit int, token string) core.Envelope {
-	d := core.Diagnosis{DiagnosisID: s.id, State: s.state, CreatedAt: core.Timestamp(s.created), UpdatedAt: core.Timestamp(s.updated), ExpiresAt: core.Timestamp(s.expires), PromptBundle: core.Version, RulesetVersion: core.Version, Jobs: []core.Job{}, Connections: []core.Connection{}, Findings: []core.Finding{}, Knowledge: []core.Knowledge{}, Coverage: emptyCoverage(), ResumeSummary: core.ResumeSummary{ScopeSummary: "Application scope is not yet resolved.", CheckedRuleIDs: []string{}, KnownFacts: []string{}, Gaps: []string{}, NextStep: "Clarify the application and direction.", RemainingCount: 0}, Question: s.question}
+	d := core.Diagnosis{DiagnosisID: s.id, State: s.state, CreatedAt: core.Timestamp(s.created), UpdatedAt: core.Timestamp(s.updated), ExpiresAt: core.Timestamp(s.expires), PromptBundle: design.PromptVersion, RulesetVersion: core.Version, Jobs: []core.Job{}, Connections: []core.Connection{}, Findings: []core.Finding{}, Knowledge: []core.Knowledge{}, Coverage: emptyCoverage(), ResumeSummary: core.ResumeSummary{ScopeSummary: "Application scope is not yet resolved.", CheckedRuleIDs: []string{}, KnownFacts: []string{}, Gaps: []string{}, NextStep: "Clarify the application and direction.", RemainingCount: 0}, Question: s.question}
 	c := cursor{Session: s.id, Owner: s.owner, Revision: s.revision}
 	if a != nil {
 		c.Attempt = a.id

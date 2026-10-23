@@ -124,11 +124,8 @@ func (v *oidcVerifier) verify(ctx context.Context, raw string, _ *http.Request) 
 		if b.Subject == claims.Subject {
 			projects := []string{}
 			for _, p := range b.AstraProjects {
-				for _, allowed := range v.cfg.Astra.AllowedProjects {
-					if p == allowed {
-						projects = append(projects, p)
-						break
-					}
+				if v.cfg.Astra.ProjectAllowed(p) {
+					projects = append(projects, p)
 				}
 			}
 			principal := core.Principal{ID: claims.Subject, Scopes: core.IntersectScopes(b.Contexts, v.cfg.Kube.Contexts), AstraProjects: projects}

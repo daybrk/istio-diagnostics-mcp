@@ -126,6 +126,9 @@ func main() {
 	decode(root+"/examples/server-config.json", &configExample)
 	configValidator := resolve(configSchema)
 	must(configValidator.Validate(configExample))
+	var astraExample any
+	decode(root+"/examples/server-config-astra.json", &astraExample)
+	must(configValidator.Validate(astraExample))
 	// Missing remote authentication and enabled ASTRA without its configuration
 	// must fail rather than silently selecting a permissive setup.
 	for _, mode := range []string{"http-no-auth", "astra-no-config"} {
@@ -198,7 +201,7 @@ func main() {
 		}
 		return nil
 	}))
-	fmt.Printf("Validated %d tools, %d cases, config + 2 negative configs, %d prompt hashes, %d local links, %d JSON files.\n", len(catalog.Tools), len(cases.Cases), len(manifest.Modules), links, jsonFiles)
+	fmt.Printf("Validated %d tools, %d cases, 2 configs + 2 negative configs, %d prompt hashes, %d local links, %d JSON files.\n", len(catalog.Tools), len(cases.Cases), len(manifest.Modules), links, jsonFiles)
 	fmt.Println("This command validates design artifacts only; use go test for runtime fixtures and a real cluster for live verification.")
 }
 

@@ -183,7 +183,8 @@
       "type": "object",
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Legacy override. Omit to infer availability from endpoint and credential_env settings."
         },
         "default_url": {
           "type": "string",
@@ -204,7 +205,8 @@
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]{1,32}$"
           },
-          "maxItems": 100
+          "maxItems": 100,
+          "description": "Optional operator restriction. Omitted: upstream credential scope for stdio; HTTP still requires subject project bindings. Empty array denies all projects."
         },
         "request_budget_seconds": {
           "type": "integer",
@@ -215,18 +217,46 @@
           "minimum": 1
         }
       },
-      "required": [
-        "enabled"
-      ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "maxProperties": 0
+        },
+        {
+          "properties": {
+            "enabled": {
+              "const": false
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        },
+        {
+          "required": [
+            "credential_env"
+          ],
+          "anyOf": [
+            {
+              "required": [
+                "default_url"
+              ]
+            },
+            {
+              "required": [
+                "agent_url"
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
   "required": [
     "schema_version",
     "transport",
     "kube",
-    "limits",
-    "astra"
+    "limits"
   ],
   "additionalProperties": false,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -270,43 +300,6 @@
         "required": [
           "http"
         ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "astra": {
-            "properties": {
-              "enabled": {
-                "const": true
-              }
-            }
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "astra": {
-            "required": [
-              "credential_env",
-              "allowed_projects",
-              "request_budget_seconds",
-              "max_response_bytes"
-            ],
-            "anyOf": [
-              {
-                "required": [
-                  "default_url"
-                ]
-              },
-              {
-                "required": [
-                  "agent_url"
-                ]
-              }
-            ]
-          }
-        }
       }
     }
   ]

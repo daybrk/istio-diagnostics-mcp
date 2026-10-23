@@ -33,18 +33,26 @@ func fault(code, message string, retry bool) error {
 	return &core.Fault{Code: code, Message: message, Retryable: retry}
 }
 func (c *Client) Query(ctx context.Context, p core.Principal, r core.ProductRequest) (core.ProductResult, error) {
-	if !c.cfg.Enabled {
-		return core.ProductResult{}, fault("INTEGRATION_DISABLED", "ASTRA integration is disabled", false)
+	if !c.cfg.Available() {
+		return core.ProductResult{}, fault("INTEGRATION_DISABLED", "ASTRA endpoint/credentials are not configured or the legacy override disables it", false)
 	}
 	allowed := map[string]bool{}
-	for _, project := range p.AstraProjects {
-		for _, global := range c.cfg.AllowedProjects {
-			if project == global {
+	if p.AstraCredentialScope {
+		if c.cfg.AllowedProjects == nil {
+			allowed = nil
+		} else {
+			for _, project := range c.cfg.AllowedProjects {
+				allowed[project] = true
+			}
+		}
+	} else {
+		for _, project := range p.AstraProjects {
+			if c.cfg.ProjectAllowed(project) {
 				allowed[project] = true
 			}
 		}
 	}
-	if len(allowed) == 0 || (r.ProjectID != "" && !allowed[r.ProjectID]) {
+	if allowed != nil && (len(allowed) == 0 || (r.ProjectID != "" && !allowed[r.ProjectID])) {
 		return core.ProductResult{}, fault("UPSTREAM_FORBIDDEN", "Project is outside the authorized scope", false)
 	}
 	if err := validateRequest(r); err != nil {

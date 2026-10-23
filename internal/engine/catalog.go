@@ -9,13 +9,21 @@ import (
 func (e *Engine) capabilities(p core.Principal) core.Envelope {
 	status := "disabled"
 	actions := []string{}
-	if e.cfg.Astra.Enabled {
+	if e.cfg.Astra.Available() {
 		status = "configured"
-		actions = []string{"catalog", "ask", "search", "source"}
+		if e.cfg.Astra.DefaultURL != "" {
+			actions = append(actions, "catalog")
+		}
+		if e.cfg.Astra.AgentURL != "" {
+			actions = append(actions, "ask")
+		}
+		if e.cfg.Astra.DefaultURL != "" {
+			actions = append(actions, "search", "source")
+		}
 	}
 	checks := append([]string{}, e.checks...)
 	scope := append([]core.Scope{}, p.Scopes...)
-	return core.Success(core.Capabilities{ServerVersion: "0.1.0-live", ContractVersion: core.Version, PromptBundle: core.Version, RulesetVersion: core.Version, Transports: []string{"stdio", "streamable_http"}, Scope: scope, Formats: []string{"envoy-v3-json", "istio-default-access-log", "istio-json-access-log"}, SupportedChecks: checks, Limits: core.CapabilitiesLimits{SessionTTLSeconds: e.cfg.Limits.SessionIdleTTLSeconds, MaxSessions: e.cfg.Limits.MaxSessions, OperationBudgetSeconds: e.cfg.Limits.OperationBudgetSeconds, ResponseBytes: e.cfg.Limits.MaxToolResponseBytes}, Astra: core.CapabilitiesAstra{Enabled: e.cfg.Astra.Enabled, Status: status, Actions: actions}})
+	return core.Success(core.Capabilities{ServerVersion: "0.1.0-live", ContractVersion: core.Version, PromptBundle: design.PromptVersion, RulesetVersion: core.Version, Transports: []string{"stdio", "streamable_http"}, Scope: scope, Formats: []string{"envoy-v3-json", "istio-default-access-log", "istio-json-access-log"}, SupportedChecks: checks, Limits: core.CapabilitiesLimits{SessionTTLSeconds: e.cfg.Limits.SessionIdleTTLSeconds, MaxSessions: e.cfg.Limits.MaxSessions, OperationBudgetSeconds: e.cfg.Limits.OperationBudgetSeconds, ResponseBytes: e.cfg.Limits.MaxToolResponseBytes}, Astra: core.CapabilitiesAstra{Enabled: e.cfg.Astra.Available(), Status: status, Actions: actions}})
 }
 func (e *Engine) playbook(p core.Principal, in input) core.Envelope {
 	if in.DiagnosisID != "" {
@@ -25,8 +33,8 @@ func (e *Engine) playbook(p core.Principal, in input) core.Envelope {
 		}
 		e.touch(s)
 	}
-	if in.ModuleID == "astra" && !e.cfg.Astra.Enabled {
-		return core.Fail("INTEGRATION_DISABLED", "ASTRA is disabled. Continue with the core diagnostics playbook.")
+	if in.ModuleID == "astra" && !e.cfg.Astra.Available() {
+		return core.Fail("INTEGRATION_DISABLED", "ASTRA is not configured or the legacy override disables it. Continue with core diagnostics.")
 	}
 	b, err := design.Files.ReadFile("prompts/manifest.json")
 	if err != nil {
