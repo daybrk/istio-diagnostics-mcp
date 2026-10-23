@@ -19,9 +19,9 @@ func TestWindowFrozenAndFutureRejected(t *testing.T) {
 		t.Fatal("accepted future end")
 	}
 }
-func TestScopeCannotExpand(t *testing.T) {
+func TestContextScopeCannotExpand(t *testing.T) {
 	p := Principal{ID: "a", Scopes: []Scope{{Context: "c", Namespaces: []string{"a"}}}}
-	if p.Allows("c", "b") || !p.Allows("c", "a") {
+	if p.AllowsContext("other") || !p.AllowsContext("c") {
 		t.Fatal("scope mismatch")
 	}
 }

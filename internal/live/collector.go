@@ -30,68 +30,6 @@ type resources struct {
 	used     int
 }
 
-func (c *Collector) readResources(ctx context.Context, p core.Principal, cluster string) resources {
-	out := resources{objects: map[string]map[string][]map[string]any{}}
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	slots := c.podSlots
-	for _, scope := range core.IntersectScopes(c.cfg.Kube.Contexts, p.Scopes) {
-		if scope.Context != cluster {
-			continue
-		}
-		for _, namespace := range scope.Namespaces {
-			out.objects[namespace] = map[string][]map[string]any{}
-		}
-	}
-	for namespace := range out.objects {
-		for _, rt := range append(append([]resourceType{}, allowedResources...), resourceType{"namespaces", "Namespace"}) {
-			namespace, rt := namespace, rt
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				select {
-				case slots <- struct{}{}:
-					defer func() { <-slots }()
-				case <-ctx.Done():
-					mu.Lock()
-					out.failures = append(out.failures, readFailure{namespace, rt.resource, ctx.Err()})
-					mu.Unlock()
-					return
-				}
-				name := ""
-				if rt.resource == "namespaces" {
-					name = namespace
-				}
-				objects, err := c.get(ctx, cluster, namespace, rt.resource, name, "")
-				mu.Lock()
-				defer mu.Unlock()
-				if err != nil {
-					out.failures = append(out.failures, readFailure{namespace, rt.resource, err})
-					return
-				}
-				b, _ := json.Marshal(objects)
-				if out.used+len(b) > c.cfg.Limits.MemoryBytes {
-					out.failures = append(out.failures, readFailure{namespace, rt.resource, &core.Fault{Code: "RESOURCE_LIMIT", Message: "snapshot memory limit reached"}})
-					return
-				}
-				out.used += len(b)
-				out.objects[namespace][rt.kind] = objects
-				now := core.Timestamp(time.Now())
-				items := []any{}
-				for _, o := range objects {
-					clean := core.RedactObject(o).(map[string]any)
-					items = append(items, clean)
-					out.entries = append(out.entries, core.Resource{Context: cluster, Namespace: namespace, Kind: rt.kind, Name: str(meta(o), "name"), UID: str(meta(o), "uid"), CollectedAt: now, Object: clean})
-				}
-				if name == "" {
-					out.entries = append(out.entries, core.Resource{Context: cluster, Namespace: namespace, Kind: rt.kind + "List", CollectedAt: now, Object: map[string]any{"apiVersion": "v1", "kind": rt.kind + "List", "items": items}})
-				}
-			}()
-		}
-	}
-	wg.Wait()
-	return out
-}
 func (c *Collector) Collect(ctx context.Context, p core.Principal, req core.CollectRequest, progress func(core.Progress)) (*core.Snapshot, error) {
 	s := &core.Snapshot{Request: req, Pods: []core.PodSnapshot{}, Resources: []core.Resource{}, Coverage: []core.CoverageEntry{}, Limitations: []string{}, CollectedAt: core.Timestamp(time.Now())}
 	start, e := time.Parse(time.RFC3339Nano, req.Window.Start)
@@ -153,7 +91,11 @@ func (c *Collector) Collect(ctx context.Context, p core.Principal, req core.Coll
 	for _, o := range mainPods {
 		addPod(o, sourceRole)
 	}
-	r := c.readResources(ctx, p, q.Context)
+	selectedNamespaces := []string{q.Namespace}
+	if req.Peer != nil && req.Peer.Namespace != "" {
+		selectedNamespaces = append(selectedNamespaces, req.Peer.Namespace)
+	}
+	r := c.readResources(ctx, p, q.Context, selectedNamespaces...)
 	s.Resources = r.entries
 	for _, f := range r.failures {
 		s.Limitations = append(s.Limitations, fmt.Sprintf("%s/%s: %s", f.namespace, f.resource, safeError(f.err)))
@@ -195,7 +137,7 @@ func (c *Collector) Collect(ctx context.Context, p core.Principal, req core.Coll
 			detail := "Event collection unavailable"
 			st := "unavailable"
 			for _, f := range r.failures {
-				if f.namespace == pod.Ref.Namespace && f.resource == "events" {
+				if (f.namespace == pod.Ref.Namespace || f.namespace == "*") && f.resource == "events" {
 					detail = safeError(f.err)
 					st = status(f.err)
 				}
@@ -281,8 +223,11 @@ func (c *Collector) validatePeer(p core.Principal, cluster string, peer *core.Pe
 			return &core.Fault{Code: "INVALID_ARGUMENT", Message: "peer workload or service requires an explicit namespace"}
 		}
 	}
-	if peer.Namespace != "" && (!p.Allows(cluster, peer.Namespace) || !c.cfg.LocalPrincipal().Allows(cluster, peer.Namespace)) {
-		return &core.Fault{Code: "SCOPE_DENIED", Message: "peer namespace is outside the allowed scope"}
+	if !p.AllowsContext(cluster) || !c.cfg.LocalPrincipal().AllowsContext(cluster) {
+		return &core.Fault{Code: "SCOPE_DENIED", Message: "context is outside the allowed scope"}
+	}
+	if peer.Namespace != "" && !core.ValidName(peer.Namespace) {
+		return &core.Fault{Code: "INVALID_ARGUMENT", Message: "invalid peer namespace"}
 	}
 	if peer.Kind == "ip" && net.ParseIP(peer.Value) == nil {
 		return &core.Fault{Code: "INVALID_ARGUMENT", Message: "invalid peer IP"}

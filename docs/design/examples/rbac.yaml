@@ -1,10 +1,9 @@
-# DESIGN EXAMPLE. Administrator chooses namespaces and bindings; MCP never applies it.
-# Namespaced rules: repeat in every authorized workload/root-policy namespace.
+# DESIGN EXAMPLE. Administrator assigns bindings; MCP never applies this file.
+# Bind cluster-wide for all-namespace lists, or accept partial namespace fallbacks.
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: istio-diagnostics-reader
-  namespace: shop
 rules:
   - apiGroups: [""]
     resources: ["pods", "services", "events"]

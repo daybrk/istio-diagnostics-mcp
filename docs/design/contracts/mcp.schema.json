@@ -1158,7 +1158,8 @@
             "minLength": 1,
             "maxLength": 63
           },
-          "maxItems": 1000
+          "maxItems": 1000,
+          "description": "All namespaces in the assigned context: [\"*\"]. Kubernetes RBAC controls resource access. Never use * as a workload namespace."
         }
       },
       "required": [

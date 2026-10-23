@@ -6,7 +6,8 @@
 ## Kubernetes API
 
 Используется фиксированный `kubectl` runner без shell. В аргументах всегда явные
-context/namespace, timeout и формат вывода. Credentials только из выбранного
+context, timeout и формат вывода. Для списка namespaced-ресурсов используется
+`--all-namespaces`; для конкретного объекта, логов и tunnel — явный namespace. Credentials только из выбранного
 kubeconfig. Ни инструмент MCP, ни ответ ASTRA не могут передать команду runner.
 
 | API group | Ресурсы | Verbs | Зачем |
@@ -19,18 +20,26 @@ kubeconfig. Ни инструмент MCP, ни ответ ASTRA не могут
 | security.istio.io | authorizationpolicies, peerauthentications, requestauthentications | get/list | Политики выбранной связи |
 | core | pods/log | get | Только container=istio-proxy, current/previous |
 | core или events.k8s.io | events | get/list | Lifecycle/readiness с UID и временем; без дублирования двух API |
-| core | namespaces | get/list в разрешённой области | Labels для namespaceSelector/injection/revision |
+| core | namespaces | get/list в выбранном context | Labels для namespaceSelector/injection/revision |
 | core | pods/portforward | get/create по используемому транспорту | Connect к pod:15000 |
 
 Не требуются Secrets, pods/exec, ephemeralcontainers или права менять workload.
 Watch разрешён пользователем, но текущему запросному flow не обязателен.
 Недоступные namespaces/root policies не заменяются пустыми списками.
 Namespaced Role не может дать доступ к namespaces; его чтение требует отдельно
-выданных cluster-scoped разрешений. Не расширять allowlist для получения этой информации.
+выданных cluster-scoped разрешений. Отказ списка namespaces не блокирует списки
+других ресурсов. Для каждого типа выполняется отдельный ограниченный по объёму
+и времени общий список. При Forbidden — fallback только в явно выбранные
+namespaces workload/peer; общий отказ сохраняется в coverage. Успешный пустой
+список и недоступный список различаются, в том числе при частичном сборе.
+Evidence и записи полноты списков учитываются в бюджете вместе с прочитанными
+объектами; сначала сохраняются namespaces выбранных участников. При нехватке
+памяти группа namespace/тип пропускается целиком с RESOURCE_LIMIT, без ложного
+признака полного списка. Формирование evidence также прекращается при отмене.
 
 [RBAC-пример](examples/rbac.yaml) — документ для администратора, не применяется
-MCP. В нём нет RoleBinding и нет автоматической выдачи прав. Для каждого
-диагностируемого и root-policy namespace оператор задаёт scope отдельно.
+MCP. В нём нет bindings и нет автоматической выдачи прав. ClusterRole описывает
+чтение во всех namespaces; фактические привязки назначает администратор.
 
 ## Логи и время
 
@@ -93,7 +102,10 @@ parser; unsupported endpoint не останавливает остальные 
 файла или MCP args. При disabled ASTRA не проверять наличие её credentials и не
 делать network discovery. HTTP режим без валидной auth config не стартует.
 
-Kube context/namespace allowlist задаётся оператором. Запрос пользователя может
-сузить, но не расширить её. Remote principal scope пересекается с этой областью.
+Оператор задаёт разрешённые Kubernetes contexts. Remote principal contexts
+пересекаются с этим списком; namespace allowlist отсутствует. `namespaces` в
+старых конфигурациях принимается, но игнорируется с сообщением в stderr.
+Capabilities публикует `namespaces: ["*"]`; это маркер, не namespace приложения.
+Отсутствующий namespace в workload требует уточнения и не наследуется из конфига.
 Сервер работает на машине с доступом к API Kubernetes; локальный DNS этой машины
 не используется как доказательство DNS приложения.

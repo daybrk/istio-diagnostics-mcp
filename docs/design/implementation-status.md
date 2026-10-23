@@ -8,9 +8,10 @@
 | Область | Реализованное поведение | Граница |
 |---|---|---|
 | MCP | 11 инструментов, раскрытые input schemas, JSON в text и structuredContent; ограниченная совместимость с JSON-кодированными объектами | Контракт `2026-10-22`; после декодирования строгая валидация; транспорт согласует MCP через SDK |
-| Инструкции | Семь встроенных модулей bundle `2026-10-23.1`, initialize.instructions, resources и prompt | Модули версионированы manifest; поведение стороннего агента сервером не гарантируется |
+| Инструкции | Семь встроенных модулей bundle `2026-10-23.2`, initialize.instructions, resources и prompt | Модули версионированы manifest; поведение стороннего агента сервером не гарантируется |
 | Сессии | Ownership, TTL, idempotency, jobs, отмена, закрытие, история attempts, cursor pagination | Только память процесса; после рестарта восстановление не обещается |
-| Сбор | Kubectl с фиксированными аргументами, owner UID, все найденные реплики, ресурсы, Events, current/previous proxy logs | Отказы доступа и недоступные форматы остаются явными пробелами |
+| Доступ | Разрешённые contexts, все namespaces в пределах Kubernetes RBAC; старые namespace lists игнорируются с сообщением | Namespace приложения требуется для идентификации; context/ownership/ASTRA bindings сохраняются |
+| Сбор | Kubectl с фиксированными аргументами, owner UID, все найденные реплики, ресурсы всех namespaces с ограничениями объёма и RBAC fallback, Events, current/previous proxy logs | Отказы доступа и недоступные форматы остаются явными пробелами |
 | Envoy | Loopback port-forward к pod:15000, четыре фиксированных GET, лимиты и UID monitoring | Нет active probes и /stats; текущая конфигурация не является исторической |
 | Анализ | Проверки состояния proxy, Service/EndpointSlice/ports, route/cluster, xDS, TLS, policy subset, симптомов и различий реплик | Консервативные подмножества семантики; unsupported/unknown не скрываются |
 | HTTP | OIDC JWT RS256, issuer/audience/expiry/signature, subject bindings, Host/Origin checks | Opaque tokens и другие JWT algorithms не поддержаны; реальный provider не проверен |

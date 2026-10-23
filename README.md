@@ -21,11 +21,16 @@ go build -trimpath -o bin/istio-diagnostics-mcp ./cmd/istio-diagnostics-mcp
 cp docs/design/examples/server-config.json server-config.json
 ```
 
-В `server-config.json` задайте настоящий `kube.kubeconfig_path`, context и явный
-список разрешённых namespaces. Пример содержит демонстрационные значения и
-`transport: "stdio"`. Не включайте namespace в scope, если его данные не должны
-попадать клиенту: коллектор читает ресурсы всех разрешённых namespaces для
-разрешения участников и политик, а логи/dump — только выбранных участников.
+В `server-config.json` задайте настоящий `kube.kubeconfig_path` и Kubernetes context.
+Сервер собирает ресурсы во всех namespaces этого context в пределах прав kubeconfig,
+включая `default` и `istio-system`; логи/dump — только у выбранных участников.
+Пример содержит демонстрационные значения и `transport: "stdio"`.
+
+Поле `namespaces` больше не требуется. Старые списки в `kube.contexts` и HTTP
+bindings принимаются, но игнорируются; при запуске и `-check-config` сервер
+сообщает об этом в stderr. В capabilities `namespaces: ["*"]` означает все
+namespaces, а не имя для запроса. Namespace приложения по-прежнему передаётся
+агентом; если он неизвестен, сервер задаёт вопрос.
 
 ```bash
 ./bin/istio-diagnostics-mcp -config server-config.json -check-config
@@ -132,8 +137,10 @@ port-forward ограничиваются отдельными параметр�
 
 [RBAC-пример](docs/design/examples/rbac.yaml) описывает чтение ресурсов, `pods/log`
 и `pods/portforward`; привязки прав назначает администратор. Сервер ничего не
-применяет. Нужные namespaces, включая namespace корневых политик, оператор
-перечисляет явно. Отказ чтения остаётся пробелом в coverage.
+применяет. Для полного сбора нужны права list ресурсов во всех namespaces.
+При Forbidden общий список не считается пустым: сервер пробует чтение в
+namespaces выбранных workload/peer и возвращает partial coverage. Отказ чтения
+списка namespaces не блокирует остальные ресурсы.
 
 Port-forward выбирает конкретный pod и слушает loopback. Разрешены только GET:
 `/config_dump?include_eds`, `/certs`, `/clusters?format=json`, `/server_info`.
@@ -148,8 +155,10 @@ Port-forward выбирает конкретный pod и слушает loopbac
 В конфигурации задайте `transport: "streamable_http"` и объект `http` по
 [схеме](docs/design/contracts/config.schema.json): `listen`, HTTPS `public_url`,
 `allowed_origins`, `auth.mode: "oidc"`, HTTPS `issuer`, `audience` и `bindings`.
-Каждая binding содержит точный subject, contexts/namespaces и astra_projects.
-Эта область пересекается с глобальным scope сервера.
+Каждая binding содержит точный subject, contexts и astra_projects. Список context
+пересекается с глобальным списком сервера; в каждом таком context доступны все
+namespaces в пределах Kubernetes RBAC. Старое поле `http.auth.bindings[].contexts[].namespaces`
+игнорируется. Сессии остаются привязаны к владельцу и разрешённым context.
 
 Поддержаны подписанные JWT access tokens **RS256**: проверяются подпись по JWKS,
 issuer, audience, expiry и привязка subject. Opaque tokens и другие алгоритмы

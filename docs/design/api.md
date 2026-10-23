@@ -96,9 +96,14 @@ Output-схемы остаются прежними. Initialize.instructions и 
 
 ### Workload и peer
 
+В `get_capabilities.scope` каждый разрешённый context содержит
+`namespaces: ["*"]`: сервер не ограничивает namespaces. Реальные права чтения
+определяет Kubernetes RBAC, отказы отражаются в coverage.
+
 `WorkloadQuery`: kind `Deployment|StatefulSet|DaemonSet|Pod|Selector`, ровно name
-для именованного объекта или selector для Selector. Context/namespace можно не
-передать только для уточнения/явного единственного настроенного значения.
+для именованного объекта или selector для Selector. Единственный разрешённый
+context выбирается автоматически. Отсутствующий namespace всегда требует
+уточнения: старый список namespaces и маркер `*` не являются значением по умолчанию.
 Сбор без однозначных context/namespace запрещён. `WorkloadRef` результата всегда
 содержит context, namespace, kind, name, uid.
 

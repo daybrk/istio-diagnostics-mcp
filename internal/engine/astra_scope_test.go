@@ -32,7 +32,7 @@ func TestPromptBundleVersionAcrossResponses(t *testing.T) {
 	if !caps.Astra.Enabled {
 		t.Fatal("configured ASTRA not discoverable")
 	}
-	if caps.PromptBundle != "2026-10-23.1" || caps.ContractVersion != "2026-10-22" {
+	if caps.PromptBundle != "2026-10-23.2" || caps.ContractVersion != "2026-10-22" {
 		t.Fatalf("versions: %+v", caps)
 	}
 	pb := call(t, e, p, "get_playbook", map[string]any{"module_id": "astra"}).Data.(core.Playbook)

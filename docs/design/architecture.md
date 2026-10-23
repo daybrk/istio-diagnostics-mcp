@@ -21,7 +21,7 @@ flowchart TD
 | Компонент | Вход → выход | Ограничения |
 |---|---|---|
 | Transport | JSON-RPC → типизированный вызов | Go SDK; stdout только MCP; HTTP auth до tool dispatch |
-| API | Principal + args → validated command | Проверка ownership, context/namespace scope, состояния, лимитов |
+| API | Principal + args → validated command | Проверка ownership, context scope и Kubernetes identity, состояния, лимитов |
 | Coordinator | Command → job и результат | Детерминированная последовательность, bounded retries, отмена |
 | Session store | IDs → session/attempt/job/evidence | In-memory, TTL, лимит памяти, изоляция principal |
 | Collector | План чтений → observations + coverage | Фиксированный runner без shell; нет произвольных команд/URL |
@@ -70,7 +70,8 @@ MCP transport session и diagnosis session имеют разные ID и сро�
 ## Изоляция удалённого сервиса
 
 Для HTTP предложен проверяемый OIDC bearer access token с issuer/audience/expiry
-и явным сопоставлением `(issuer, subject)` с context и namespace allowlist.
+и явным сопоставлением `(issuer, subject)` с разрешёнными Kubernetes contexts. Namespace allowlist отсутствует;
+доступ ко всем namespaces выбранного context ограничивается Kubernetes RBAC.
 Конкретный issuer и политика выбора kube identity остаются O02 в требованиях.
 Нельзя доверять произвольному `X-User` или client-supplied principal.
 

@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Warnings      []string    `json:"-"`
 	SchemaVersion string      `json:"schema_version"`
 	Transport     string      `json:"transport"`
 	HTTP          *HTTPConfig `json:"http,omitempty"`
@@ -90,13 +91,26 @@ func ParseConfig(b []byte) (Config, error) {
 	if len(c.Kube.Contexts) == 0 {
 		return c, fmt.Errorf("at least one Kubernetes scope is required")
 	}
-	for _, s := range c.Kube.Contexts {
-		if strings.HasPrefix(s.Context, "-") {
-			return c, fmt.Errorf("invalid context")
+	normalize := func(scopes []Scope) ([]Scope, error) {
+		for _, scope := range scopes {
+			if strings.HasPrefix(scope.Context, "-") {
+				return nil, fmt.Errorf("invalid context")
+			}
+			if scope.Namespaces != nil && len(c.Warnings) == 0 {
+				c.Warnings = append(c.Warnings, "Legacy namespaces lists are ignored: all namespaces in assigned contexts are available, subject to Kubernetes RBAC. Remove namespaces from kube.contexts and HTTP bindings.")
+			}
 		}
-		for _, n := range s.Namespaces {
-			if !ValidName(n) {
-				return c, fmt.Errorf("invalid namespace")
+		return ContextScopes(scopes), nil
+	}
+	var err error
+	if c.Kube.Contexts, err = normalize(c.Kube.Contexts); err != nil {
+		return c, err
+	}
+	if c.HTTP != nil {
+		for i := range c.HTTP.Auth.Bindings {
+			binding := &c.HTTP.Auth.Bindings[i]
+			if binding.Contexts, err = normalize(binding.Contexts); err != nil {
+				return c, err
 			}
 		}
 	}
@@ -130,20 +144,28 @@ func HTTPSURL(raw string) bool {
 	return e == nil && u.Scheme == "https" && u.Host != "" && u.User == nil && u.Fragment == ""
 }
 func (c Config) LocalPrincipal() Principal {
-	return Principal{ID: "local", Scopes: c.Kube.Contexts, AstraProjects: c.Astra.AllowedProjects, AstraCredentialScope: c.Astra.AllowedProjects == nil}
+	return Principal{ID: "local", Scopes: ContextScopes(c.Kube.Contexts), AstraProjects: c.Astra.AllowedProjects, AstraCredentialScope: c.Astra.AllowedProjects == nil}
+}
+
+// ContextScopes canonicalizes scope for capabilities and session authorization.
+// Namespaces remains a wire compatibility field; "*" is never a workload namespace.
+func ContextScopes(scopes []Scope) []Scope {
+	out := []Scope{}
+	seen := map[string]bool{}
+	for _, s := range scopes {
+		if !seen[s.Context] {
+			out = append(out, Scope{Context: s.Context, Namespaces: []string{"*"}})
+			seen[s.Context] = true
+		}
+	}
+	return out
 }
 func IntersectScopes(a, b []Scope) []Scope {
 	out := []Scope{}
 	p := Principal{Scopes: b}
-	for _, s := range a {
-		n := []string{}
-		for _, v := range s.Namespaces {
-			if p.Allows(s.Context, v) {
-				n = append(n, v)
-			}
-		}
-		if len(n) > 0 {
-			out = append(out, Scope{Context: s.Context, Namespaces: n})
+	for _, s := range ContextScopes(a) {
+		if p.AllowsContext(s.Context) {
+			out = append(out, s)
 		}
 	}
 	return out

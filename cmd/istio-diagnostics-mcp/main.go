@@ -57,6 +57,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("invalid configuration: %w", err)
 	}
+	for _, warning := range cfg.Warnings {
+		fmt.Fprintln(os.Stderr, "Warning:", warning)
+	}
 	if err = validateListener(cfg, cert, key); err != nil {
 		return err
 	}

@@ -163,7 +163,7 @@ func TestSelectorGroupsOwnersWithoutGuessingNames(t *testing.T) {
 	}
 }
 func TestRejectInvalidOrDeniedQueriesWithoutReads(t *testing.T) {
-	for _, q := range []core.WorkloadQuery{{Context: "cluster", Namespace: "else", Kind: "Pod", Name: "p"}, {Context: "cluster", Namespace: "app", Kind: "Pod", Name: "--all"}, {Context: "cluster", Namespace: "app", Kind: "Selector", Selector: "x=y; touch /tmp/a"}} {
+	for _, q := range []core.WorkloadQuery{{Context: "other", Namespace: "app", Kind: "Pod", Name: "p"}, {Context: "cluster", Namespace: "app", Kind: "Pod", Name: "--all"}, {Context: "cluster", Namespace: "app", Kind: "Selector", Selector: "x=y; touch /tmp/a"}} {
 		f := fixture()
 		_, e := testCollector(f).Resolve(context.Background(), testConfig().LocalPrincipal(), q)
 		if e == nil || len(f.calls) > 0 {

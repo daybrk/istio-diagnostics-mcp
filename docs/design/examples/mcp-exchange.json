@@ -20,7 +20,7 @@
         "data": {
           "server_version": "design-only",
           "contract_version": "2026-10-22",
-          "prompt_bundle": "2026-10-23.1",
+          "prompt_bundle": "2026-10-23.2",
           "ruleset_version": "2026-10-22",
           "transports": [
             "stdio",
@@ -30,8 +30,7 @@
             {
               "context": "test-cluster",
               "namespaces": [
-                "shop",
-                "backend"
+                "*"
               ]
             }
           ],
@@ -61,7 +60,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"contract_version\": \"2026-10-22\", \"outcome\": \"ok\", \"data\": {\"server_version\": \"design-only\", \"contract_version\": \"2026-10-22\", \"prompt_bundle\": \"2026-10-23.1\", \"ruleset_version\": \"2026-10-22\", \"transports\": [\"stdio\", \"streamable_http\"], \"scope\": [{\"context\": \"test-cluster\", \"namespaces\": [\"shop\", \"backend\"]}], \"formats\": [\"istio_access_text\", \"known_json\"], \"supported_checks\": [\"SERVICE_ENDPOINTS\", \"TLS_VALIDITY\"], \"limits\": {\"session_ttl_seconds\": 1800, \"max_sessions\": 16, \"operation_budget_seconds\": 120, \"response_bytes\": 524288}, \"astra\": {\"enabled\": false, \"status\": \"disabled\", \"actions\": []}}, \"warnings\": [], \"next_actions\": []}"
+          "text": "{\"contract_version\": \"2026-10-22\", \"outcome\": \"ok\", \"data\": {\"server_version\": \"design-only\", \"contract_version\": \"2026-10-22\", \"prompt_bundle\": \"2026-10-23.2\", \"ruleset_version\": \"2026-10-22\", \"transports\": [\"stdio\", \"streamable_http\"], \"scope\": [{\"context\": \"test-cluster\", \"namespaces\": [\"*\"]}], \"formats\": [\"istio_access_text\", \"known_json\"], \"supported_checks\": [\"SERVICE_ENDPOINTS\", \"TLS_VALIDITY\"], \"limits\": {\"session_ttl_seconds\": 1800, \"max_sessions\": 16, \"operation_budget_seconds\": 120, \"response_bytes\": 524288}, \"astra\": {\"enabled\": false, \"status\": \"disabled\", \"actions\": []}}, \"warnings\": [], \"next_actions\": []}"
         }
       ]
     }

@@ -16,14 +16,12 @@ type Principal struct {
 	AstraCredentialScope bool
 }
 
-func (p Principal) Allows(context, namespace string) bool {
+// AllowsContext checks the server's context binding. Kubernetes RBAC controls
+// access to resources in every namespace of that context.
+func (p Principal) AllowsContext(context string) bool {
 	for _, s := range p.Scopes {
 		if s.Context == context {
-			for _, n := range s.Namespaces {
-				if n == namespace {
-					return true
-				}
-			}
+			return true
 		}
 	}
 	return false

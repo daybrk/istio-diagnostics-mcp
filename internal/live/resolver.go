@@ -45,7 +45,11 @@ func New(cfg core.Config) *Collector {
 	return &Collector{cfg: cfg, runner: execRunner{}, podSlots: make(chan struct{}, cfg.Limits.PodConcurrency), tunnelSlots: make(chan struct{}, cfg.Limits.PortForwardConcurrency)}
 }
 func (c *Collector) base(cluster, namespace string) []string {
-	return []string{"--kubeconfig=" + c.cfg.Kube.KubeconfigPath, "--context=" + cluster, "--namespace=" + namespace, fmt.Sprintf("--request-timeout=%ds", c.cfg.Limits.RequestTimeoutSeconds)}
+	args := []string{"--kubeconfig=" + c.cfg.Kube.KubeconfigPath, "--context=" + cluster, fmt.Sprintf("--request-timeout=%ds", c.cfg.Limits.RequestTimeoutSeconds)}
+	if namespace != "" {
+		args = append(args, "--namespace="+namespace)
+	}
+	return args
 }
 func (c *Collector) run(ctx context.Context, args []string, limit int) (commandResult, error) {
 	var out commandResult
@@ -104,7 +108,13 @@ func short(s string) string {
 	return s
 }
 func (c *Collector) get(ctx context.Context, cluster, ns, resource, name, selector string) ([]map[string]any, error) {
+	if ns == "" && name != "" && resource != "namespaces" {
+		return nil, &core.Fault{Code: "INVALID_ARGUMENT", Message: "named resource reads require a namespace"}
+	}
 	a := append(c.base(cluster, ns), "get", resource)
+	if ns == "" && resource != "namespaces" {
+		a = append(a, "--all-namespaces")
+	}
 	if name != "" {
 		a = append(a, name)
 	}
@@ -147,8 +157,14 @@ func (c *Collector) get(ctx context.Context, cluster, ns, resource, name, select
 		if !ok || str(meta(v), "uid") == "" || !core.ValidName(str(meta(v), "name")) {
 			return nil, &core.Fault{Code: "KUBERNETES_INVALID_RESPONSE", Message: "invalid item identity for " + resource}
 		}
-		if resource != "namespaces" && str(meta(v), "namespace") != ns {
-			return nil, &core.Fault{Code: "SCOPE_DENIED", Message: "resource response is outside requested namespace"}
+		if resource != "namespaces" {
+			actual := str(meta(v), "namespace")
+			if !core.ValidName(actual) {
+				return nil, &core.Fault{Code: "KUBERNETES_INVALID_RESPONSE", Message: "invalid namespace in resource list"}
+			}
+			if ns != "" && actual != ns {
+				return nil, &core.Fault{Code: "SCOPE_DENIED", Message: "resource response is outside requested namespace"}
+			}
 		}
 		out = append(out, v)
 	}
@@ -166,23 +182,11 @@ func (c *Collector) scope(p core.Principal, q core.WorkloadQuery) (core.Workload
 		}
 		q.Context = contexts[0]
 	}
-	ns := []string{}
-	for _, s := range scopes {
-		if s.Context == q.Context {
-			ns = append(ns, s.Namespaces...)
-		}
-	}
-	if len(ns) == 0 {
+	if !p.AllowsContext(q.Context) || !c.cfg.LocalPrincipal().AllowsContext(q.Context) {
 		return q, nil, &core.Fault{Code: "SCOPE_DENIED", Message: "context is outside the allowed scope"}
 	}
 	if q.Namespace == "" {
-		if len(ns) != 1 {
-			return q, &core.Question{Field: "namespace", Message: "Select an allowed namespace", Options: ns}, nil
-		}
-		q.Namespace = ns[0]
-	}
-	if !p.Allows(q.Context, q.Namespace) || !c.cfg.LocalPrincipal().Allows(q.Context, q.Namespace) {
-		return q, nil, &core.Fault{Code: "SCOPE_DENIED", Message: "namespace is outside the allowed scope"}
+		return q, &core.Question{Field: "namespace", Message: "Which namespace contains the application?", Options: []string{}}, nil
 	}
 	if !core.ValidName(q.Namespace) {
 		return q, nil, &core.Fault{Code: "INVALID_ARGUMENT", Message: "invalid namespace"}

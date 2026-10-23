@@ -38,7 +38,7 @@ func TestHandshakeCatalogAndEnvelope(t *testing.T) {
 	called := false
 	cs := connect(t, handlerFunc(func(_ context.Context, p core.Principal, n string, _ json.RawMessage) (core.Envelope, error) {
 		called = true
-		if p.ID != "local" || !p.Allows("ctx", "allowed") {
+		if p.ID != "local" || !p.AllowsContext("ctx") {
 			t.Errorf("principal %#v", p)
 		}
 		return core.Fail("TEST_ERROR", "test"), nil

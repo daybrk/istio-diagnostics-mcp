@@ -14,7 +14,7 @@ import (
 var Files embed.FS
 
 const Version = "2026-10-22"
-const PromptVersion = "2026-10-23.1"
+const PromptVersion = "2026-10-23.2"
 
 var once sync.Once
 var compiled map[string]*jsonschema.Resolved

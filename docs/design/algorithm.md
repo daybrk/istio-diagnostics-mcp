@@ -24,7 +24,9 @@ Owner references ведут от Pod через ReplicaSet к Deployment; prefix
 1. Зафиксировать pod UID, owner, Pod IP, revision/image metadata, resourceVersion
    и collected_at. Читать containerStatuses и initContainerStatuses: native
    sidecar может находиться среди init containers.
-2. Получить Service/EndpointSlice и применимые ресурсы в разрешённом scope.
+2. Получить Service/EndpointSlice и применимые ресурсы всех namespaces выбранного
+   context. Kubernetes Forbidden оставляет partial coverage; выбранные namespaces
+   workload/peer читаются отдельно, если общий список запрещён.
 3. Собрать текущие и доступные previous logs `istio-proxy` всех реплик. По UID и
    времени добавить Kubernetes Events. Не читать другие контейнерные логи.
 4. Разделить access events и диагностические сообщения Envoy/pilot-agent.

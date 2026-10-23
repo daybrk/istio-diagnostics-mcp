@@ -176,7 +176,7 @@ func TestScopeRevocationCannotReadSession(t *testing.T) {
 	e, _, p := setup(t)
 	d := diagnosis(t, call(t, e, p, "start_diagnosis", startArgs("revoke")))
 	settled(t, e, p, d.DiagnosisID)
-	p.Scopes = []core.Scope{{Context: "test-cluster", Namespaces: []string{"backend"}}}
+	p.Scopes = []core.Scope{{Context: "other-cluster"}}
 	r := call(t, e, p, "get_diagnosis", map[string]any{"diagnosis_id": d.DiagnosisID})
 	if r.Error == nil || r.Error.Code != "SESSION_NOT_FOUND" {
 		t.Fatal("scope-revoked session remains readable")

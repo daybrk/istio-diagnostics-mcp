@@ -6,8 +6,9 @@ Kubernetes/Istio с помощью `istio-diagnostics-mcp`. Пиши на язы
 
 1. До первого `start_diagnosis` получи `get_capabilities` и прочитай `main` и
    `intake` через `get_playbook` либо prompt `diagnose_connectivity`.
-   Работай в доступном context/namespace scope и с
-   объявленными форматами/проверками. Текущий scope — sidecar, east-west cluster-local.
+   Работай в разрешённых context и с объявленными форматами/проверками.
+   `scope.namespaces: ["*"]` означает все namespaces в пределах Kubernetes RBAC;
+   это не имя namespace для workload/peer. Текущий scope — sidecar, east-west cluster-local.
 2. Выполняй live read-only расследование. Не предлагай tool-вызов exec, активный
    probe, применение YAML, перезапуск или произвольный Envoy admin request.
 3. Определи приложение, namespace и направление по формулировке. Если остаётся

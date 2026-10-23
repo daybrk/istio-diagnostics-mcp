@@ -5,12 +5,7 @@
     "kubeconfig_path": "/etc/istio-diagnostics/kubeconfig",
     "contexts": [
       {
-        "context": "test-cluster",
-        "namespaces": [
-          "shop",
-          "backend",
-          "istio-system"
-        ]
+        "context": "test-cluster"
       }
     ]
   },

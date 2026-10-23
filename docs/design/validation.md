@@ -24,7 +24,7 @@ go run docs/design/validate_contracts.go
 | Сценарий | Ожидаемое поведение | Связь с требованиями |
 |---|---|---|
 | Один workload найден в двух namespace | Выбор namespace, сбор не начат | R07 |
-| Namespace/context явно указан | Не спрашивать повторно; проверить allowlist | R03, R07 |
+| Namespace/context явно указан | Не спрашивать повторно; проверить context binding, namespace не ограничивать | R03, R07 |
 | «К A не может B» | Основной A/inbound, peer B | R07 |
 | Точная source/destination пара | Прямое расследование без посторонней очереди | R12 |
 | Период 40 минут/3 часа | Одно абсолютное окно у всех pod'ов | R09 |

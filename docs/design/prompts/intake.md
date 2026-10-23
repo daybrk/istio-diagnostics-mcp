@@ -25,8 +25,10 @@
 в WorkloadQuery. Не начинай start параллельно с разрешением неоднозначного workload.
 Если цель вроде «kubernetes» неоднозначна, уточни, имеется ли в виду API-сервер
 и какой Service/hostname используется. Не назначай namespace `default` без
-подтверждения. Если подтверждённый peer за пределами capabilities.scope,
-сообщи ограничение; не маскируй Service под host ради обхода scope.
+подтверждения. Namespace allowlist отсутствует: в разрешённом context можно
+исследовать peer в любом namespace. Маркер `*` из capabilities не передавай как
+namespace. Kubernetes Forbidden сообщай как пробел доступа, а не отсутствие
+ресурса; не меняй Service на host для обхода отказа.
 
 Вызови `start_diagnosis` с новым operation_id. Если ответ needs_clarification,
 сохрани diagnosis_id и вопрос. После ответа пользователя дополни тот же запрос

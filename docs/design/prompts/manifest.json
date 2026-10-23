@@ -1,11 +1,11 @@
 {
-  "bundle_version": "2026-10-23.1",
+  "bundle_version": "2026-10-23.2",
   "contract_version": "2026-10-22",
   "modules": [
     {
       "id": "main",
       "path": "main.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Начало работы",
       "inputs": "Capabilities и жалоба",
       "expected_result": "Выбор следующего этапа",
@@ -20,12 +20,12 @@
         "recheck",
         "astra"
       ],
-      "sha256": "ec6b9e776ab89725053665ccedc22c8b78484596faeddde9ebe6322664e3b4fb"
+      "sha256": "609f2e102ef3b8ac9a85d987d5dce2dadb7ae6a45865ad8f72c665cffb5d76e7"
     },
     {
       "id": "intake",
       "path": "intake.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Перед start и при ошибках входных аргументов",
       "inputs": "Жалоба, scope, candidates",
       "expected_result": "Однозначный запрос или вопрос",
@@ -35,12 +35,12 @@
       "related_modules": [
         "investigation"
       ],
-      "sha256": "e06c653783b68f68f4f1c237c3198b404df2f551976c98357d7981257359e8a7"
+      "sha256": "00164ace1cef1220015a65e4dc031802b0a0677d96eda6f3b6a61cacdd389e96"
     },
     {
       "id": "investigation",
       "path": "investigation.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Сбор и выбранная связь",
       "inputs": "Diagnosis view",
       "expected_result": "Findings и coverage",
@@ -56,7 +56,7 @@
     {
       "id": "evidence",
       "path": "evidence.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Оценка причинности",
       "inputs": "Findings и evidence",
       "expected_result": "Вывод без повышения confidence",
@@ -71,7 +71,7 @@
     {
       "id": "report",
       "path": "report.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Ответ пользователю",
       "inputs": "Findings, scope, remaining queue",
       "expected_result": "Краткий проверяемый ответ",
@@ -86,7 +86,7 @@
     {
       "id": "recheck",
       "path": "recheck.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Проверка после изменения",
       "inputs": "Предыдущая attempt и новое окно",
       "expected_result": "Сравнение с оговоркой о трафике",
@@ -101,7 +101,7 @@
     {
       "id": "astra",
       "path": "integrations/astra.md",
-      "version": "2026-10-23.1",
+      "version": "2026-10-23.2",
       "trigger": "Пользователь запросил ASTRA, интеграция доступна и есть пробел в знаниях",
       "inputs": "Session, question, user-selected project_id, authorized scope",
       "expected_result": "Knowledge evidence",

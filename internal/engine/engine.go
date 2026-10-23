@@ -187,10 +187,8 @@ func retainsScope(current, original core.Principal) bool {
 		return false
 	}
 	for _, scope := range original.Scopes {
-		for _, namespace := range scope.Namespaces {
-			if !current.Allows(scope.Context, namespace) {
-				return false
-			}
+		if !current.AllowsContext(scope.Context) {
+			return false
 		}
 	}
 	for _, project := range original.AstraProjects {

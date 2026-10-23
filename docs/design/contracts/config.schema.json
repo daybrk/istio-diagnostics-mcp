@@ -276,13 +276,13 @@
             "minLength": 1,
             "maxLength": 63
           },
-          "minItems": 1,
-          "maxItems": 1000
+          "maxItems": 1000,
+          "deprecated": true,
+          "description": "Legacy field, accepted but ignored. All namespaces in assigned contexts are available subject to Kubernetes RBAC."
         }
       },
       "required": [
-        "context",
-        "namespaces"
+        "context"
       ],
       "additionalProperties": false
     }

@@ -118,7 +118,7 @@ func TestHTTPIdentityAndSessionIsolation(t *testing.T) {
 		if p.AstraCredentialScope || len(p.AstraProjects) != 1 || p.AstraProjects[0] != "p1" {
 			t.Fatalf("HTTP inherited credential-wide access or lost binding: %+v", p)
 		}
-		if p.ID != "alice" || !p.Allows("c", "n") || p.Allows("c", "forbidden") {
+		if p.ID != "alice" || !p.AllowsContext("c") || p.AllowsContext("unassigned") || len(p.Scopes) != 1 || len(p.Scopes[0].Namespaces) != 1 || p.Scopes[0].Namespaces[0] != "*" {
 			t.Fatalf("scope=%#v", p)
 		}
 	case <-time.After(time.Second):

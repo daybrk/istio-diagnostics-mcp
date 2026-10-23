@@ -29,24 +29,11 @@ func normalizeQuery(q core.WorkloadQuery, p core.Principal) (core.WorkloadQuery,
 			return q, question("workload.context", "Choose the Kubernetes context.", options), nil
 		}
 	}
-	var scopes []string
-	for _, s := range p.Scopes {
-		if s.Context == q.Context {
-			scopes = append(scopes, s.Namespaces...)
-		}
-	}
-	if len(scopes) == 0 {
+	if !p.AllowsContext(q.Context) {
 		return q, nil, &core.Fault{Code: "SCOPE_DENIED", Message: "Kubernetes context is outside the assigned scope."}
 	}
 	if q.Namespace == "" {
-		if len(scopes) == 1 {
-			q.Namespace = scopes[0]
-		} else {
-			return q, question("workload.namespace", "Which namespace contains the application?", scopes), nil
-		}
-	}
-	if !p.Allows(q.Context, q.Namespace) {
-		return q, nil, &core.Fault{Code: "SCOPE_DENIED", Message: "Namespace is outside the assigned scope."}
+		return q, question("workload.namespace", "Which namespace contains the application?", nil), nil
 	}
 	if !core.ValidName(q.Namespace) || (q.Kind != "Selector" && !core.ValidName(q.Name)) {
 		return q, nil, &core.Fault{Code: "INVALID_ARGUMENT", Message: "Invalid Kubernetes object name."}
@@ -130,9 +117,6 @@ func (e *Engine) start(p core.Principal, in input, hash string) core.Envelope {
 			peer := s.input.Peer
 			if (peer.Kind == "workload" || peer.Kind == "service") && peer.Namespace == "" {
 				s.question = question("peer.namespace", "Which namespace contains the other application or Service?", nil)
-			} else if peer.Namespace != "" && !p.Allows(q.Context, peer.Namespace) {
-				r = core.Fail("SCOPE_DENIED", "Peer namespace is outside the assigned scope.")
-				return e.recordStart(s, in, hash, createKey, r)
 			}
 		}
 	}
