@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/daybrk/istio-diagnostics-mcp/docs/design"
 	"github.com/daybrk/istio-diagnostics-mcp/internal/core"
 	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -42,6 +43,9 @@ func TestHandshakeCatalogAndEnvelope(t *testing.T) {
 		}
 		return core.Fail("TEST_ERROR", "test"), nil
 	}))
+	if cs.InitializeResult().Instructions == "" {
+		t.Fatal("client receives no startup guidance before its first call")
+	}
 	list, err := cs.ListTools(context.Background(), nil)
 	if err != nil {
 		t.Fatal(err)
@@ -53,8 +57,8 @@ func TestHandshakeCatalogAndEnvelope(t *testing.T) {
 		b, _ := json.Marshal(tool.InputSchema)
 		var s map[string]any
 		json.Unmarshal(b, &s)
-		if s["$defs"] == nil {
-			t.Fatalf("schema is not self contained: %s", tool.Name)
+		if s["type"] != "object" || (s["properties"] == nil && s["oneOf"] == nil) || strings.Contains(string(b), `"$ref"`) {
+			t.Fatalf("input schema must expose self-contained properties: %s", tool.Name)
 		}
 	}
 	res, err := cs.CallTool(context.Background(), &mcp.CallToolParams{Name: "get_capabilities", Arguments: map[string]any{}})
@@ -82,7 +86,7 @@ func TestHandshakeCatalogAndEnvelope(t *testing.T) {
 		t.Fatalf("resources %v %v", resources, err)
 	}
 	for _, resource := range resources.Resources {
-		if !strings.HasPrefix(resource.URI, "istio-diagnostics://playbook/2026-10-23/") {
+		if !strings.HasPrefix(resource.URI, "istio-diagnostics://playbook/"+design.PromptVersion+"/") {
 			t.Fatalf("stale resource URI: %s", resource.URI)
 		}
 		content, err := cs.ReadResource(context.Background(), &mcp.ReadResourceParams{URI: resource.URI})

@@ -7,8 +7,8 @@
 
 | Область | Реализованное поведение | Граница |
 |---|---|---|
-| MCP | 11 инструментов, self-contained schemas, JSON в text и structuredContent | Контракт `2026-10-22`; транспорт согласует MCP через SDK |
-| Инструкции | Семь встроенных модулей bundle `2026-10-23`, resources и prompt | Модули версионированы manifest; ASTRA tool-модуль не выдаётся при disabled |
+| MCP | 11 инструментов, раскрытые input schemas, JSON в text и structuredContent; ограниченная совместимость с JSON-кодированными объектами | Контракт `2026-10-22`; после декодирования строгая валидация; транспорт согласует MCP через SDK |
+| Инструкции | Семь встроенных модулей bundle `2026-10-23.1`, initialize.instructions, resources и prompt | Модули версионированы manifest; поведение стороннего агента сервером не гарантируется |
 | Сессии | Ownership, TTL, idempotency, jobs, отмена, закрытие, история attempts, cursor pagination | Только память процесса; после рестарта восстановление не обещается |
 | Сбор | Kubectl с фиксированными аргументами, owner UID, все найденные реплики, ресурсы, Events, current/previous proxy logs | Отказы доступа и недоступные форматы остаются явными пробелами |
 | Envoy | Loopback port-forward к pod:15000, четыре фиксированных GET, лимиты и UID monitoring | Нет active probes и /stats; текущая конфигурация не является исторической |
@@ -58,6 +58,8 @@ knowledge и jobs; пропуски дают RESOURCE_LIMIT/partial. Счётч�
 - Session tests для выбора/остатка очереди, replay/conflict, refresh, отмены,
   ownership, сужения scope, истечения TTL, памяти и пагинации.
 - MCP SDK handshake/tools/resources, OIDC/JWKS и ASTRA через локальные fixtures.
+- Discovery-валидация до MCP-вызова и однократное декодирование workload/peer/window:
+  native/encoded формы, отказ неверным типам, лишним полям и double encoding.
 - Интеграция coordinator с настоящим анализатором: direct pair с указанным и
   неуказанным портом, IP/workload identities, связь логов обеих сторон через
   UID/EndpointSlice, malformed dump, Service port ≠ backend port.

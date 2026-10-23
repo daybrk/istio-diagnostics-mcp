@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"testing"
+
+	"github.com/google/jsonschema-go/jsonschema"
 )
 
 func TestEmbeddedContractCases(t *testing.T) {
@@ -29,6 +31,23 @@ func TestEmbeddedContractCases(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			if e := Validate(c.Tool+"Input", c.Input); (e == nil) != c.InputValid {
 				t.Fatalf("input: %v", e)
+			}
+			// Native-object examples must retain their constraints after discovery
+			// references are inlined and compatibility alternatives are added.
+			b, e := json.Marshal(ToolSchema(c.Tool + "Input"))
+			if e != nil {
+				t.Fatal(e)
+			}
+			var s jsonschema.Schema
+			if e = json.Unmarshal(b, &s); e != nil {
+				t.Fatal(e)
+			}
+			r, e := s.Resolve(nil)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if e = r.Validate(c.Input); (e == nil) != c.InputValid {
+				t.Fatalf("client input: %v", e)
 			}
 			if c.Output != nil {
 				if e := Validate(c.Tool+"Output", c.Output); (e == nil) != c.OutputValid {

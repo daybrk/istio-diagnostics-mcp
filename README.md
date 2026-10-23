@@ -53,9 +53,37 @@ Stdio-процесс ожидает MCP-сообщения; stdout занят п
 не нужны. При удалённом подключении бинарник и kubeconfig находятся на сервере,
 клиенту нужен только URL MCP и токен.
 
+### Если Qwen Code сообщает `must be object` или `must NOT be valid`
+
+Проверьте фактические arguments: `"workload": "{\"kind\":...}"` — строка,
+а `"workload": {"kind":...}` — объект. Ошибка формата не означает сетевой отказ
+приложения; до успешного start сбор не начался. Не меняйте Pod на предполагаемый
+Deployment и не удаляйте peer или период ради обхода ошибки.
+
+Начиная с bundle `2026-10-23.1`, discovery и транспорт принимают однократно
+кодированные объекты в workload/peer/time_window start и time_window refresh.
+Содержимое проходит строгую проверку. Обновите существующий checkout и бинарник:
+
+```bash
+git fetch origin
+git switch feat/go-mcp-v0.1
+git pull --ff-only origin feat/go-mcp-v0.1
+go build -trimpath -o bin/istio-diagnostics-mcp ./cmd/istio-diagnostics-mcp
+```
+
+Убедитесь, что `mcpServers.istio-diagnostics.command` указывает именно на этот
+бинарник. Сохраните свой server-config и перезапустите Qwen Code для загрузки
+новой схемы tools. Через `/mcp` проверьте подключение; попросите агента вызвать
+`get_capabilities` и сверить `prompt_bundle: "2026-10-23.1"`.
+Для удалённого HTTP-подключения обновляется процесс сервера.
+Если ошибка сохраняется, нужны версия Qwen Code, модель/provider, версия bundle
+и аргументы неудачного вызова без секретов. Совместимость проверена транспортными
+тестами; повторный запуск в пользовательском Qwen/кластере ещё необходим.
+
 ## Как идёт расследование
 
-1. `get_capabilities` показывает scope, лимиты и доступные проверки.
+1. `get_capabilities` показывает scope, лимиты и доступные проверки;
+   `get_playbook(main/intake)` задаёт порядок работы и обработку ошибок вызова.
 2. `resolve_workload` разрешает имя/selector по владельцам и UID. Неоднозначность
    приводит к вопросу, а не к сбору чужих приложений.
 3. `start_diagnosis` принимает workload, inbound/outbound, optional peer и период.

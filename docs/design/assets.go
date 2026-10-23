@@ -14,7 +14,7 @@ import (
 var Files embed.FS
 
 const Version = "2026-10-22"
-const PromptVersion = "2026-10-23"
+const PromptVersion = "2026-10-23.1"
 
 var once sync.Once
 var compiled map[string]*jsonschema.Resolved
@@ -93,6 +93,9 @@ func Validate(name string, v any) error {
 }
 func ToolSchema(name string) map[string]any {
 	once.Do(initialize)
+	if strings.HasSuffix(name, "Input") {
+		return clientInputSchema(name)
+	}
 	// Ship only the transitive definitions this tool uses. Clients receive a
 	// self-contained schema without repeating the entire catalog 22 times.
 	all := schema["$defs"].(map[string]any)

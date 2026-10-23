@@ -5,7 +5,7 @@
   "tools": [
     {
       "name": "get_capabilities",
-      "description": "Область доступа, версии правил/промптов, лимиты и состояние optional ASTRA.",
+      "description": "Область доступа, версии правил/промптов, лимиты и состояние optional ASTRA. Call first, then load get_playbook main and intake before starting a diagnosis.",
       "inputSchema": {
         "$ref": "mcp.schema.json#/$defs/get_capabilitiesInput"
       },
@@ -37,7 +37,7 @@
     },
     {
       "name": "start_diagnosis",
-      "description": "Начать live read-only расследование входящих/исходящих cluster-local соединений Kubernetes/Istio; уточнить недостающий ввод.",
+      "description": "Начать live read-only расследование входящих/исходящих cluster-local соединений Kubernetes/Istio; уточнить недостающий ввод. First read get_capabilities and get_playbook main/intake; resolve the workload before using its candidate here. workload, peer and time_window are JSON objects (one JSON-encoded object string is accepted for compatibility). Preserve the selected application and time window. On argument validation failure, correct the format once, then stop and report the integration blocker; do not switch workloads or use ASTRA as a fallback.",
       "inputSchema": {
         "$ref": "mcp.schema.json#/$defs/start_diagnosisInput"
       },
@@ -101,7 +101,7 @@
     },
     {
       "name": "refresh_diagnosis",
-      "description": "Создать новую live-попытку с явным окном; при необходимости сравнить с прежней без генерации трафика.",
+      "description": "Создать новую live-попытку с явным окном; при необходимости сравнить с прежней без генерации трафика. Pass time_window as an object; one JSON-encoded object string is accepted for compatibility. Preserve the user-selected interval.",
       "inputSchema": {
         "$ref": "mcp.schema.json#/$defs/refresh_diagnosisInput"
       },
